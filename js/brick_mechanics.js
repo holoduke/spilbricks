@@ -19,15 +19,19 @@ function level(){
 			brick.init(gameSize.width/2 + block.x - block.width/2, gameSize.height/4 + block.y - block.height/2);
 			brick.setSize(block.width, block.height);
 			brick.setColor(block.color);
+			if(block.collisionHanler) brick.setCollisionHandler(block.collisionHanler);
 			this.elements.push(brick);
 		}
 
 		this.explosions = [];
 	}
 
-	this.removeBrick = function(index){
-		this.addExplosion(this.elements[index]);
-		bricksToRemove.push(index);
+	this.hitBrick = function(index){
+		if(this.elements[index].collisionHanler){
+			this.elements[index].collisionHanler();
+		}else{
+			this.removeBrick(index);
+		}
 	}
 
 	this.update = function(){
@@ -50,6 +54,14 @@ function level(){
 		}else{
 			this.explosions.push(expl);
 		}
+	}
+
+	// PRIVATE FUNCTIONS
+
+	this.removeBrick = function(index){
+		console.log(this);
+		this.addExplosion(this.elements[index]);
+		bricksToRemove.push(index);
 	}
 }
 
@@ -98,7 +110,7 @@ function gameView(){
 			case "rectangle":
 				ctx.fillStyle = object.color;
 				ctx.fillRect(object.x, object.y, object.width, object.height);
-				ctx.fillStyle = "hsla(274, 53%, 0%, .2)";
+				ctx.fillStyle = "hsla(0, 0%, 0%, .2)";
 				ctx.fillRect(object.x, object.y + object.height - 2, object.width, 2);
 				ctx.fillRect(object.x, object.y, 2, object.height - 2);
 				break;

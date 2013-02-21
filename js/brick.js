@@ -37,7 +37,7 @@ function brick()
 
 					b.hitBrick(colMng.hitDist(b, gameLevel.elements[i]));
 					gameLevel.elements[i].hitBall();
-					gameLevel.removeBrick(i);
+					gameLevel.hitBrick(i);
 
 					hasCollision = true;
 				}
