@@ -109,7 +109,7 @@ function gameView(){
 			case "rectangle":
 				ctx.fillStyle = object.color;
 				ctx.fillRect(object.x, object.y, object.width, object.height);
-				ctx.fillStyle = "hsla(0, 0%, 0%, .2)";
+				ctx.fillStyle = "hsla(0, 0%, 0%, .9)";
 				ctx.fillRect(object.x, object.y + object.height - 2, object.width, 2);
 				ctx.fillRect(object.x, object.y, 2, object.height - 2);
 				break;
@@ -120,10 +120,25 @@ function gameView(){
 				ctx.closePath();
 				ctx.fill();
 				break;
+			case "rectangle2":
+				ctx.fillStyle = object.rgb
+				ctx.fillRect(object.x, object.y, object.width, object.height);
 			default:
 				break;
 		}
 		
+	}
+	
+	this.drawText = function(o){
+		context = ctx;
+		context.fillStyle="#5CADE9";
+		context.lineStyle="#5CADE9";
+		context.font=o.font;
+		context.shadowOffsetX=4;
+		context.shadowOffsetY=4;
+		context.shadowBlur=3;
+		context.fillText(o.text, o.x, o.y);
+		context.strokeText(o.text, o.x, o.y);
 	}
 
 	this.bgColor = function(value){

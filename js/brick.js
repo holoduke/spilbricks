@@ -1,7 +1,7 @@
 function brick()
 {
 	var gameSize = {width:800, height:600};
-
+	
 	var p = new pBar();
 	var b = new ball();
 	var gameLevel = new level();
@@ -15,10 +15,20 @@ function brick()
             	window.msRequestAnimationFrame     ||
             	null ;
 
+	var showText = function(t,x,y){
+		view.drawText(t,x,y);
+		
+		setTimeout(function(){
+			
+			showText(t-1,x,y)
+			
+		},1000)
+	}
+	
 	var update = function(){
 		
 		view.clear();
-
+		
 		hasCollision = false;
 
 		if(colMng.hasCollided(b, p)){
@@ -69,11 +79,21 @@ function brick()
 		
 		gameLevel.update();
 
+		
+		
 		if(gameLevel.elements.length == 0)
 		{
 			gameIsOver();
 		}
 	}
+	
+	var GAMESTATE = {};
+	GAMESTATE.splash = 0;
+	GAMESTATE.starting = 1;
+	GAMESTATE.started = 2;
+	GAMESTATE.gameover = 3;
+	
+	var currentGameState = null;
 
 	var init = function (){
 		p.init(gameSize.width);
@@ -81,9 +101,66 @@ function brick()
 		b.init(gameSize);
 		gameLevel.init(gameSize, getIntro());
 		view.size(gameSize.width, gameSize.height);
-		update();
-		document.addEventListener('keydown', startGame);
+		//update();
+		registerEvents();
+		
+		updateGameState(GAMESTATE.splash);
+		
+		//document.addEventListener('keydown', startGame);
 	}
+	
+	var registerEvents = function(){
+		
+		document.addEventListener('keydown', function(e){
+			
+			switch (e.keyCode){
+			
+			case 13:
+				if (currentGameState == GAMESTATE.splash){
+					updateGameState(GAMESTATE.starting)					
+				}
+				break;
+			}		
+		});
+		
+		event.sub("startGame",function(){
+			updateGameState(GAMESTATE.start)
+		})
+	}
+	
+	/**
+	 * updates game state
+	 * first end current state then start new state
+	 */
+	var updateGameState = function(state){
+				
+		//stop old state
+		switch (currentGameState){
+		
+			case GAMESTATE.splash:
+				stopSplashScreen();
+				break;
+		}
+		
+		//start new state
+		currentGameState = state;
+		
+		
+		switch (state){
+		    case GAMESTATE.splash:
+		    	showSplashScreen();
+		    	break;
+		
+			case GAMESTATE.starting:
+				startStartingScreen();
+				break;
+				
+			case GAMESTATE.start:
+				startGame();
+				break;	
+		}
+	}
+	
 
 	var gameIsOver = function(){
 
@@ -92,10 +169,55 @@ function brick()
 		gameLevel.init(gameSize, getLevel());
 	}
 	
+	var startScreenTimer = null;
+	var showSplashScreen = function(){
+		
+		var i = 0;
+		function drawStartText(){		
+			startScreenTimer = setTimeout(function(){
+				if (i % 2){
+					view.draw({shape:'rectangle2',rgb:'rgba(255,255,255,100)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+				}
+				else{
+					view.drawText({text:"Press enter to start",font:"bold 48pt sans-serif",x:100,y:300});
+				}
+				drawStartText();
+				i++;
+			},500)	
+		}
+		drawStartText();
+	}
+	
+	var stopSplashScreen = function(){
+		clearTimeout(startScreenTimer);
+	}
+	
+	
+	var startStartingScreen = function(){
+				
+		var i = 3;
+		
+		function drawStartText(){
+			
+			view.draw({shape:'rectangle2',rgb:'rgba(255,255,255,100)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+		
+			view.drawText({text:i,font:"bold 98pt sans-serif",x:360,y:300});
+			
+			i--;
+			
+			if (i < 0){
+				return event.pub("startGame");
+			}
+			
+			startScreenTimer = setTimeout(function(){
+				drawStartText();
+			},1000)	
+		}
+		drawStartText();
+	}
+	
+	
 	var startGame = function(event) {
-	    if(event.keyCode == 87) {
-	     	document.removeEventListener('keydown', startGame);
-
 		    if ( animFrame !== null ) {
 		        var recursiveAnim = function() {
 		            update();
@@ -103,10 +225,15 @@ function brick()
 		        };
 			    animFrame( recursiveAnim );
 		    } else {
-		     	window.setInterval(update, 20);
+		     	//window.setInterval(update, 1000);
 		    }  
-	    }
+	    
 	}
+	
+	var gameloop = function(){
+		 
+	}
+	
 
 	init();
 }
