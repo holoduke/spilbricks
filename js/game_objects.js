@@ -64,6 +64,7 @@ function aBrick(){
 	this.height = 20;
 	this.color = "#AAAAAA";
 	this.shape = "rectangle";
+	this.hasCollisionHanler = false;
 
 	this.setColor = function(_c){
 		this.color = _c;
@@ -72,6 +73,11 @@ function aBrick(){
 	this.setSize = function(_w, _h){
 		this.width = _w;
 		this.height = _h;
+	}
+
+	this.setCollisionHandler = function(handler){
+		this.hasCollisionHanler = true;
+		this.hitBall = handler;
 	}
 
 	this.init = function(_x, _y){

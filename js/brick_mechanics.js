@@ -27,8 +27,8 @@ function level(){
 	}
 
 	this.hitBrick = function(index){
-		if(this.elements[index].collisionHanler){
-			this.elements[index].collisionHanler();
+		if(this.elements[index].hasCollisionHanler){
+			this.elements[index].hitBall();
 		}else{
 			this.removeBrick(index);
 		}
@@ -59,7 +59,6 @@ function level(){
 	// PRIVATE FUNCTIONS
 
 	this.removeBrick = function(index){
-		console.log(this);
 		this.addExplosion(this.elements[index]);
 		bricksToRemove.push(index);
 	}
