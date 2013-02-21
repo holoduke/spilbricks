@@ -165,24 +165,36 @@ function pBar(){
 	}
 
 	this.update = function(){
-		speed += accel * getDir();
+		
+		var dir = getDir();
 
-		if(speed > 0)
-		{
-			speed -= atr;
-		}else if(speed < 0){
-			speed += atr;
+		if (dir > 0) {
+			speed += dir;
+			if (speed < 0) speed = 0;
 		}
-
+		else if (dir < 0){
+			speed += dir;
+			if (speed > 0) speed = 0;
+		}
+		else if (speed > 0){
+			speed = Math.max(0,speed -= 3)
+		}
+		else if (speed < 3){
+			speed = Math.min(0,speed += 3)
+		}
+		else{
+			speed = 0;
+		}
+	
 		this.x += speed;
 		
 		if(this.x < 0) 
 		{
 			this.x = 0;
-			speed *= -1;
+			speed *= 0;
 		}else if(this.x + this.width > borderLimit){
 			this.x = borderLimit - this.width; 
-			speed *= -1;
+			speed *= 0;
 		}
 	}
 
