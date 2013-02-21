@@ -98,6 +98,9 @@ function gameView(){
 			case "rectangle":
 				ctx.fillStyle = object.color;
 				ctx.fillRect(object.x, object.y, object.width, object.height);
+				ctx.fillStyle = "hsla(274, 53%, 0%, .2)";
+				ctx.fillRect(object.x, object.y + object.height - 2, object.width, 2);
+				ctx.fillRect(object.x, object.y, 2, object.height - 2);
 				break;
 			case "circle":
 				ctx.fillStyle = object.color;
