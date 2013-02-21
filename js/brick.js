@@ -101,7 +101,7 @@ function brick()
 		b.init(gameSize);
 		gameLevel.init(gameSize, getIntro());
 		view.size(gameSize.width, gameSize.height);
-		//update();
+		update();
 		registerEvents();
 		
 		updateGameState(GAMESTATE.splash);
@@ -125,6 +125,12 @@ function brick()
 		
 		event.sub("startGame",function(){
 			updateGameState(GAMESTATE.start)
+		})
+		
+		event.sub("gameover",function(){
+			gameLevel = null;
+			gameLevel = new level();
+			gameLevel.init(gameSize, getLevel());
 		})
 	}
 	
@@ -164,23 +170,28 @@ function brick()
 
 	var gameIsOver = function(){
 
-		gameLevel = null;
-		gameLevel = new level();
-		gameLevel.init(gameSize, getLevel());
+		event.pub("gameover");
 	}
 	
 	var startScreenTimer = null;
 	var showSplashScreen = function(){
 		
+		view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 		var i = 0;
 		function drawStartText(){		
 			startScreenTimer = setTimeout(function(){
+				
+				
 				if (i % 2){
-					view.draw({shape:'rectangle2',rgb:'rgba(255,255,255,100)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+					view.clearAni();
+					view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 				}
 				else{
 					view.drawText({text:"Press enter to start",font:"bold 48pt sans-serif",x:100,y:300});
 				}
+				
+				//view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.4)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+				
 				drawStartText();
 				i++;
 			},500)	
@@ -199,13 +210,16 @@ function brick()
 		
 		function drawStartText(){
 			
-			view.draw({shape:'rectangle2',rgb:'rgba(255,255,255,100)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+			view.clearAni();
+			
+			view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,0.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 		
 			view.drawText({text:i,font:"bold 98pt sans-serif",x:360,y:300});
 			
 			i--;
 			
 			if (i < 0){
+				view.clearAni();
 				return event.pub("startGame");
 			}
 			
