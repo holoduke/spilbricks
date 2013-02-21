@@ -94,23 +94,23 @@ function gameView(){
 	var _bgColor = "rgba(220, 220, 220, .9)";
 
 	var canvas = document.getElementById("brick");
-	var animationCanvas = document.getElementById("anibrick");
+	var splashCanvas = document.getElementById("splash");
 	var ctx = canvas.getContext("2d");
-	var anictx = animationCanvas.getContext("2d");
+	var splashctx = splashCanvas.getContext("2d");
   	ctx.canvas.width  = _width;
  	ctx.canvas.height = _height;
-  	anictx.canvas.width  = _width;
- 	anictx.canvas.height = _height;
+  	splashctx.canvas.width  = _width;
+ 	splashctx.canvas.height = _height;
  	
  	this.clear = function(){
  		ctx.fillStyle = _bgColor;
 		ctx.fillRect(0, 0, _width, _height);
 	}
  	
- 	this.clearAni = function(){
- 		anictx.fillStyle = _bgColor;
-		anictx.fillRect(0, 0, _width, _height);
-		anictx.clearRect(0, 0, _width, _height)
+ 	this.clearSplash = function(){
+ 		splashctx.fillStyle = _bgColor;
+		splashctx.fillRect(0, 0, _width, _height);
+		splashctx.clearRect(0, 0, _width, _height)
 	}
 
 	this.draw = function(object){
@@ -138,19 +138,19 @@ function gameView(){
 		}	
 	}
 	
-	this.drawAni = function(object){
+	this.drawSplash = function(object){
 		switch (object.shape)
 		{
 			case "rectangle":
-				anictx.fillStyle = object.rgb
-				anictx.fillRect(object.x, object.y, object.width, object.height);
+				splashctx.fillStyle = object.rgb
+				splashctx.fillRect(object.x, object.y, object.width, object.height);
 			default:
 				break;
 		}			
 	}
 	
 	this.drawText = function(o){
-		var context = anictx;
+		var context = splashctx;
 		context.fillStyle="#5CADE9";
 		context.lineStyle="#5CADE9";
 		context.font=o.font;

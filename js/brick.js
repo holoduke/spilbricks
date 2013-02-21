@@ -176,21 +176,21 @@ function brick()
 	var startScreenTimer = null;
 	var showSplashScreen = function(){
 		
-		view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+		view.drawSplash({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 		var i = 0;
 		function drawStartText(){		
 			startScreenTimer = setTimeout(function(){
 				
 				
 				if (i % 2){
-					view.clearAni();
-					view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+					view.clearSplash();
+					view.drawSplash({shape:'rectangle',rgb:'rgba(255,255,255,.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 				}
 				else{
 					view.drawText({text:"Press enter to start",font:"bold 48pt sans-serif",x:100,y:300});
 				}
 				
-				//view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,.4)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+				//view.drawSplash({shape:'rectangle',rgb:'rgba(255,255,255,.4)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 				
 				drawStartText();
 				i++;
@@ -210,16 +210,16 @@ function brick()
 		
 		function drawStartText(){
 			
-			view.clearAni();
+			view.clearSplash();
 			
-			view.drawAni({shape:'rectangle',rgb:'rgba(255,255,255,0.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
+			view.drawSplash({shape:'rectangle',rgb:'rgba(255,255,255,0.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
 		
 			view.drawText({text:i,font:"bold 98pt sans-serif",x:360,y:300});
 			
 			i--;
 			
 			if (i < 0){
-				view.clearAni();
+				view.clearSplash();
 				return event.pub("startGame");
 			}
 			
