@@ -29,9 +29,13 @@ function level(){
 	this.hitBrick = function(index){
 		if(this.elements[index].hasCollisionHanler){
 			this.elements[index].hitBall();
+			return true;
 		}else{
 			this.removeBrick(index);
+			return true;
 		}
+		
+		return false;
 	}
 
 	this.update = function(){
@@ -95,12 +99,20 @@ function gameView(){
 
 	var canvas = document.getElementById("brick");
 	var splashCanvas = document.getElementById("splash");
+	var scoreCanvas = document.getElementById("score");
+	
 	var ctx = canvas.getContext("2d");
 	var splashctx = splashCanvas.getContext("2d");
+	var scorectx = scoreCanvas.getContext("2d");
+	
   	ctx.canvas.width  = _width;
  	ctx.canvas.height = _height;
-  	splashctx.canvas.width  = _width;
+  	
+ 	splashctx.canvas.width  = _width;
  	splashctx.canvas.height = _height;
+ 	
+ 	scorectx.canvas.width  = _width;
+ 	scorectx.canvas.height = _height;
  	
  	this.clear = function(){
  		ctx.fillStyle = _bgColor;
@@ -112,6 +124,12 @@ function gameView(){
 		splashctx.fillRect(0, 0, _width, _height);
 		splashctx.clearRect(0, 0, _width, _height)
 	}
+ 	
+ 	this.clearScore = function(){
+ 		scorectx.fillStyle = _bgColor;
+		scorectx.fillRect(0, 0, _width, _height);
+		scorectx.clearRect(0, 0, _width, _height) 		
+ 	}
 
 	this.draw = function(object){
 		switch (object.shape)
@@ -159,6 +177,22 @@ function gameView(){
 		context.shadowBlur=3;
 		context.fillText(o.text, o.x, o.y);
 		context.strokeText(o.text, o.x, o.y);
+	}
+	
+	this.drawScore = function(score,lvl){
+		
+		this.clearScore();
+		
+		scorectx.fillStyle = "rgba(11,34,34,0.7)";
+		scorectx.fillRect(0, 0, _width,50);
+		
+		scorectx.fillStyle = "#ffffff";
+		scorectx.font = "bold 32pt sans-serif"
+		scorectx.fillText("level "+(lvl || 0),10,40);
+		
+		scorectx.fillStyle = "#ffffff";
+		scorectx.font = "bold 32pt sans-serif"
+		scorectx.fillText("score "+(score || 0),_width-200,40)
 	}
 
 	this.bgColor = function(value){

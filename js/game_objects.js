@@ -8,7 +8,7 @@ function ball(){
 
 	this.x = 0;
 	this.y = 0;
-	this.radius = 8;
+	this.radius = 12;
 	this.color = "hsla(322, 64%, 49%, 1)";
 	this.shape = "circle";
 
@@ -36,6 +36,7 @@ function ball(){
 			
 			this.x = gameSize.width/2;
 			this.y = gameSize.height/2;
+			event.pub("gameover");
 		}
 	}
 

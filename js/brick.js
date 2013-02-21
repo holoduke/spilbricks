@@ -15,15 +15,8 @@ function brick()
             	window.msRequestAnimationFrame     ||
             	null ;
 
-	var showText = function(t,x,y){
-		view.drawText(t,x,y);
-		
-		setTimeout(function(){
-			
-			showText(t-1,x,y)
-			
-		},1000)
-	}
+	var score = 0;
+	var stopgame = false;
 	
 	var update = function(){
 		
@@ -47,7 +40,10 @@ function brick()
 
 					b.hitBrick(colMng.hitDist(b, gameLevel.elements[i]));
 					gameLevel.elements[i].hitBall();
-					gameLevel.hitBrick(i);
+					
+					if(gameLevel.hitBrick(i)){
+						event.pub("brickhit");
+					}
 
 					hasCollision = true;
 				}
@@ -78,8 +74,6 @@ function brick()
 		view.draw(p);
 		
 		gameLevel.update();
-
-		
 		
 		if(gameLevel.elements.length == 0)
 		{
@@ -105,7 +99,7 @@ function brick()
 		registerEvents();
 		
 		updateGameState(GAMESTATE.splash);
-		
+	
 		//document.addEventListener('keydown', startGame);
 	}
 	
@@ -124,13 +118,20 @@ function brick()
 		});
 		
 		event.sub("startGame",function(){
-			updateGameState(GAMESTATE.start)
+			stopgame = false;
+			updateGameState(GAMESTATE.start);
 		})
 		
 		event.sub("gameover",function(){
-			gameLevel = null;
-			gameLevel = new level();
-			gameLevel.init(gameSize, getLevel());
+			updateGameState(GAMESTATE.splash);
+			
+			//gameLevel = null;
+			//gameLevel = new level();
+			//gameLevel.init(gameSize, getLevel());
+		})
+		
+		event.sub("brickhit",function(){
+			view.drawScore(++score);
 		})
 	}
 	
@@ -146,6 +147,9 @@ function brick()
 			case GAMESTATE.splash:
 				stopSplashScreen();
 				break;
+			case GAMESTATE.start:
+				stopGame();
+				break;	
 		}
 		
 		//start new state
@@ -166,13 +170,7 @@ function brick()
 				break;	
 		}
 	}
-	
-
-	var gameIsOver = function(){
-
-		event.pub("gameover");
-	}
-	
+		
 	var startScreenTimer = null;
 	var showSplashScreen = function(){
 		
@@ -232,9 +230,13 @@ function brick()
 	
 	
 	var startGame = function(event) {
+		
+			view.drawScore();
+		
 		    if ( animFrame !== null ) {
 		        var recursiveAnim = function() {
 		            update();
+		            if (stopgame) return;
 		            animFrame( recursiveAnim );
 		        };
 			    animFrame( recursiveAnim );
@@ -244,9 +246,17 @@ function brick()
 	    
 	}
 	
-	var gameloop = function(){
-		 
+	var stopGame = function(){
+		score = 0;
+		view.clearScore();
+		stopgame = true;
 	}
+	
+	var gameIsOver = function(){
+
+		event.pub("gameover");
+	}
+	
 	
 
 	init();
