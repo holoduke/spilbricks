@@ -97,7 +97,7 @@ function SplashState(_stateMachine)
 	var timerStamp;
 
 	var init = function(){
-		splashView.init('brick');
+		splashView.init('splash');
 		timerStamp = new Date().getTime();
 		addEventHandlers();
 	}
@@ -121,7 +121,8 @@ function SplashState(_stateMachine)
 	}
 
 	this.destroy = function(){
-
+		removeEventListener();
+		splashView.clean();
 	}
 
 	this.getState = function(){
@@ -129,16 +130,22 @@ function SplashState(_stateMachine)
 	}
 
 	var addEventHandlers = function(){
-		document.addEventListener('keydown', function(e){
+		document.addEventListener('keydown', onKeyDown);
+	}
+
+	var removeEventHandlers = function(){
+		document.removeEventListener('keydown', onKeyDown);
+	}
+
+	function onKeyDown(e){
 			
-			switch (e.keyCode){
-			
-			case 13:
-				splashView.clear();
-				stateMachine.setState(stateMachine.STARTING_STATE);
-				break;
-			}		
-		});
+		switch (e.keyCode){
+		
+		case 13:
+			splashView.clear();
+			stateMachine.setState(stateMachine.STARTING_STATE);
+			break;
+		}		
 	}
 
 	init();
@@ -154,7 +161,7 @@ function StartingState(_stateMachine)
 	var timerStamp;
 
 	var init = function(){
-		splashView.init('brick');
+		splashView.init('splash');
 		timerStamp = new Date().getTime();
 	}
 
@@ -178,7 +185,7 @@ function StartingState(_stateMachine)
 	}
 
 	this.destroy = function(){
-
+		splashView.clean();
 	}
 
 	this.getState = function(){
@@ -304,7 +311,7 @@ function GameOverState(_stateMachine)
 	var splashView = new gameView();
 
 	var init = function(){
-		splashView.init('brick');
+		splashView.init('splash');
 
 		splashView.clear();
 		splashView.draw({shape:'rectangle',color:'rgba(255,255,255,0.6)',x:0,y:0,width:gameSize.width,height:gameSize.width});
@@ -320,7 +327,7 @@ function GameOverState(_stateMachine)
 	}
 
 	this.destroy = function(){
-
+		splashView.clean();
 	}
 
 	this.getState = function(){

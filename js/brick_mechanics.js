@@ -136,6 +136,11 @@ function gameView(){
 		ctx.fillRect(0, 0, _width, _height);
 	}
 
+	this.clean = function(){
+		ctx.fillRect(0, 0, _width, _height);
+		ctx.clearRect(0, 0, _width, _height);
+	}
+
 	this.draw = function(object){
 		switch (object.shape)
 		{
@@ -164,17 +169,6 @@ function gameView(){
 			default:
 				break;
 		}	
-	}
-	
-	this.drawSplash = function(object){
-		switch (object.shape)
-		{
-			case "rectangle":
-				ctx.fillStyle = object.rgb
-				ctx.fillRect(object.x, object.y, object.width, object.height);
-			default:
-				break;
-		}			
 	}
 	
 	this.drawText = function(o){
