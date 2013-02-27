@@ -4,7 +4,7 @@ function level(){
 	var gameSize;
 	var bricksToRemove = [];
 
-	this.explosions = [];
+	var explosions = [];
 	this.elements = [];
 
 	//PUBLIC FUNCTIONS
@@ -23,7 +23,7 @@ function level(){
 			this.elements.push(brick);
 		}
 
-		this.explosions = [];
+		explosions = [];
 	}
 
 	this.hitBrick = function(index){
@@ -45,6 +45,16 @@ function level(){
 			this.elements.splice(bricksToRemove[i - 1], 1);
 			bricksToRemove.pop();
 		}
+
+		for(var w = explosions.length; w > 0; w--)
+		{
+			
+			if(explosions[w-1].update())
+			{
+				explosions[w - 1].destroy();
+				explosions.splice(w - 1, 1);
+			}
+		}
 	}
 
 	this.addExplosion = function(elem)
@@ -52,11 +62,26 @@ function level(){
 		var expl = new Explosion();
 		expl.init(elem.x, elem.y, elem.width, elem.height);
 		expl.setColor(elem.color, 1);
-		if(this.explosions == undefined)
+		if(explosions == undefined)
 		{
-			this.explosions = [expl];
+			explosions = [expl];
 		}else{
-			this.explosions.push(expl);
+			explosions.push(expl);
+		}
+	}
+
+	this.draw = function(view){
+		for(var i=0; i < this.elements.length; i++)
+		{	
+			view.draw(this.elements[i]);
+		}
+
+		for(var w = explosions.length; w > 0; w--)
+		{
+			for(var t = 0; t < explosions[w - 1].parts.length; t++)
+			{
+				view.draw(explosions[w - 1].parts[t]);
+			}
 		}
 	}
 
@@ -68,7 +93,7 @@ function level(){
 	}
 }
 
-function collisionManager(){
+function collisionCheck(){
 
 	this.hasCollided = function(ball, brick){
 		var result = false;
@@ -94,42 +119,22 @@ function collisionManager(){
 function gameView(){
 	var _width = 800;
 	var _height = 600;
-
 	var _bgColor = "rgba(220, 220, 220, .9)";
 
-	var canvas = document.getElementById("brick");
-	var splashCanvas = document.getElementById("splash");
-	var scoreCanvas = document.getElementById("score");
-	
-	var ctx = canvas.getContext("2d");
-	var splashctx = splashCanvas.getContext("2d");
-	var scorectx = scoreCanvas.getContext("2d");
-	
-  	ctx.canvas.width  = _width;
- 	ctx.canvas.height = _height;
-  	
- 	splashctx.canvas.width  = _width;
- 	splashctx.canvas.height = _height;
- 	
- 	scorectx.canvas.width  = _width;
- 	scorectx.canvas.height = _height;
+	var canvas;
+	var ctx;
+
+ 	this.init = function(id){
+ 		canvas = document.getElementById(id);
+ 		ctx = canvas.getContext("2d");
+ 		ctx.canvas.width  = _width;
+ 		ctx.canvas.height = _height;
+ 	}
  	
  	this.clear = function(){
  		ctx.fillStyle = _bgColor;
 		ctx.fillRect(0, 0, _width, _height);
 	}
- 	
- 	this.clearSplash = function(){
- 		splashctx.fillStyle = _bgColor;
-		splashctx.fillRect(0, 0, _width, _height);
-		splashctx.clearRect(0, 0, _width, _height)
-	}
- 	
- 	this.clearScore = function(){
- 		scorectx.fillStyle = _bgColor;
-		scorectx.fillRect(0, 0, _width, _height);
-		scorectx.clearRect(0, 0, _width, _height) 		
- 	}
 
 	this.draw = function(object){
 		switch (object.shape)
@@ -137,7 +142,7 @@ function gameView(){
 			case "rectangle":
 				ctx.fillStyle = object.color;
 				ctx.fillRect(object.x, object.y, object.width, object.height);
-				ctx.fillStyle = "hsla(0, 0%, 0%, .9)";
+				ctx.fillStyle = "hsla(0, 0%, 0%, .3)";
 				ctx.fillRect(object.x, object.y + object.height - 2, object.width, 2);
 				ctx.fillRect(object.x, object.y, 2, object.height - 2);
 				break;
@@ -151,6 +156,11 @@ function gameView(){
 			case "rectangle2":
 				ctx.fillStyle = object.rgb
 				ctx.fillRect(object.x, object.y, object.width, object.height);
+			case "score":
+				ctx.fillStyle = object.color;
+				ctx.font = "bold 32pt sans-serif"
+				ctx.fillText("score "+(object.points || 0),10,40);
+				ctx.fillText("level "+(object.level || 0),_width-200,40)
 			default:
 				break;
 		}	
@@ -160,39 +170,23 @@ function gameView(){
 		switch (object.shape)
 		{
 			case "rectangle":
-				splashctx.fillStyle = object.rgb
-				splashctx.fillRect(object.x, object.y, object.width, object.height);
+				ctx.fillStyle = object.rgb
+				ctx.fillRect(object.x, object.y, object.width, object.height);
 			default:
 				break;
 		}			
 	}
 	
 	this.drawText = function(o){
-		var context = splashctx;
-		context.fillStyle="#5CADE9";
-		context.lineStyle="#5CADE9";
+		var context = ctx;
+		context.fillStyle="hsla(322, 64%, 49%, 1)";
+		context.lineStyle="hsla(274, 53%, 37%, 1)";
 		context.font=o.font;
 		context.shadowOffsetX=4;
 		context.shadowOffsetY=4;
 		context.shadowBlur=3;
 		context.fillText(o.text, o.x, o.y);
 		context.strokeText(o.text, o.x, o.y);
-	}
-	
-	this.drawScore = function(score,lvl){
-		
-		this.clearScore();
-		
-		scorectx.fillStyle = "rgba(11,34,34,0.7)";
-		scorectx.fillRect(0, 0, _width,50);
-		
-		scorectx.fillStyle = "#ffffff";
-		scorectx.font = "bold 32pt sans-serif"
-		scorectx.fillText("level "+(lvl || 0),10,40);
-		
-		scorectx.fillStyle = "#ffffff";
-		scorectx.font = "bold 32pt sans-serif"
-		scorectx.fillText("score "+(score || 0),_width-200,40)
 	}
 
 	this.bgColor = function(value){
