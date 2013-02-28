@@ -96,10 +96,16 @@ function SplashState(_stateMachine)
 	var i = 0;
 	var timerStamp;
 
+	var scoreView = new gameView();
+	var score = new Score();
+
 	var init = function(){
 		splashView.init('splash');
 		timerStamp = new Date().getTime();
 		addEventHandlers();
+
+		scoreView.init('score');
+		score.setView(scoreView);
 	}
 
 	this.update = function(){
