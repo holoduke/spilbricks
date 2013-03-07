@@ -266,7 +266,7 @@ function GameLevelState(_stateMachine)
 		
 		if(gameLevel.elements.length == 0)
 		{
-			event.pub("gameover");
+			event.pub("nextLevel");
 		}
 	}
 
@@ -290,6 +290,10 @@ function GameLevelState(_stateMachine)
 		event.sub("gameover",function(){
 			stateMachine.setState(stateMachine.GAME_OVER_STATE);
 		})
+
+		event.sub("nextLevel",function(){
+			gameLevel.init(gameSize, getLevel());
+		})
 		
 		event.sub("brickhit",function(){
 			score.addPoint();
@@ -298,6 +302,10 @@ function GameLevelState(_stateMachine)
 
 	var deregisterEvents = function(){
 		event.sub("gameover",function(){
+			
+		})
+
+		event.sub("nextLevel",function(){
 			
 		})
 		
