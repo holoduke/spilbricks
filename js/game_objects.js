@@ -1,3 +1,5 @@
+// GAME BALL
+
 function ball(){
 	var gameSize;
 
@@ -40,6 +42,10 @@ function ball(){
 		}
 	}
 
+	this.draw = function(view){
+		view.draw(this);
+	}
+
 	this.hitBrick = function(Dist){
 		var hyp = Math.sqrt( (Dist.x * Dist.x) + (Dist.y * Dist.y) );
 
@@ -56,6 +62,8 @@ function ball(){
 		
 	}
 }
+
+// GENERIC GAME BRICK
 
 function aBrick(){
 
@@ -86,6 +94,10 @@ function aBrick(){
 		this.y = _y;
 	}
 
+	this.draw = function(view){
+		view.draw(this);
+	}
+
 	this.update = function(){
 		
 	}
@@ -99,6 +111,8 @@ function aBrick(){
 	}
 }
 
+// PLAYER BAR
+
 function pBar(){
 	
 	var isLeft = false;
@@ -111,18 +125,20 @@ function pBar(){
 	var atr = 1;
 	var borderLimit = 200;
 
-	this.x =  0;
-	this.y = 0;
-	this.width = 100;
-	this.height = 20;
+	var myBrick = new aBrick();
+
+	myBrick.x = this.x =  0;
+	myBrick.y = this.y = 0;
+	myBrick.width = this.width = 100;
+	myBrick.height = this.height = 20;
 	this.color = "hsla(274, 53%, 37%, 1)";
-	this.shape = "rectangle";
+	myBrick.setColor(this.color);
 	
-	function setIsLeft(value){
+	var setIsLeft = function(value){
 		isLeft = value;
 	}
 
-	function setISRight(value){
+	var setISRight = function(value){
 		isRight = value;
 	}
 
@@ -165,9 +181,13 @@ function pBar(){
 
 	//PUBLIC FUNCTIONS
 
-	this.init = function(_borderLimit){
-		borderLimit = _borderLimit;
-		this.x = borderLimit/2 - this.width/2;
+	this.init = function(_gameSize){
+		borderLimit = _gameSize.width;
+		this.x = _gameSize.width/2 - this.width/2;
+		this.y = _gameSize.height * 5/6;
+		myBrick.width = this.width = _gameSize.width/8;
+		myBrick.height = this.height = _gameSize.height/30;
+		
 		addListeners();
 	}
 
@@ -203,6 +223,13 @@ function pBar(){
 			this.x = borderLimit - this.width; 
 			speed *= 0;
 		}
+
+		myBrick.x = this.x;
+		myBrick.y = this.y;
+	}
+
+	this.draw = function(view){
+		view.draw(myBrick);
 	}
 
 	this.hitBall = function(){
@@ -211,5 +238,32 @@ function pBar(){
 
 	this.destroy = function(){
 		removeListeners();
+	}
+}
+
+// SCORE BAR
+
+function Score(){
+
+	this.points = 0;
+	this.level = 0;
+	var view;
+
+	this.addPoint = function(){
+		this.points++;
+		if(view != null) this.draw(view);
+	}
+
+	this.setView = function(_view){
+		view = _view;
+		this.draw(view);
+	}
+
+	this.draw = function(_view){
+		view = _view;
+		view.clear();
+
+		view.draw({shape:'rectangle', x:0, y:0, width:800, height:50, color:"rgba(11,34,34,0.7)"});
+		view.draw({shape:'score', color:"#ffffff", lvl:this.level, points:this.points} );
 	}
 }
