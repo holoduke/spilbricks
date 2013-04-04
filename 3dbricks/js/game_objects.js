@@ -135,9 +135,14 @@ function pBar(){
 		
 		if (mesh) return mesh;
 		
-        geometry = new THREE.CubeGeometry( 1, 0.2, 0.2 );
-        material = new THREE.MeshBasicMaterial( { color: 0xff0000} );
+        var geometry = new THREE.CubeGeometry( 1, 0.2, 0.2 );
 
+        var material = new THREE.MeshPhongMaterial( 
+        	{ color: 13947256.453834934 
+        	  ,shininess: 50
+        	  //,wireframe:true
+        	} );
+        
         mesh = new THREE.Mesh( geometry, material );
         mesh.position.y = -4
         mesh.position.z = 0;
@@ -199,7 +204,7 @@ function pBar(){
 
 	this.update = function(){
 		
-		
+		window.a = this.boxmodel;
 		var dir = getDir();
 		console.log('update ',dir)
 		if (dir > 0) {
