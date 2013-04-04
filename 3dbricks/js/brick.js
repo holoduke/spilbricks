@@ -11,31 +11,24 @@ function brick(){
     var geometry, material, mesh;
     
     //objects
-    var ball,bar;
-    
-    var collitionManager;
-    
+      
     init = function(){
     	
-    	initRender();
-    	initPhysics();
-    	
-    	
+    	setupWorld();
+    	setupObjects();
     	animate();
     }
     
     var groundBody;
-    
-    var initPhysics = function(){
-
-    }
-    
+        
     var b1;
-    var leftWall;
-    var rightWall;
-    var topWall;
     var plane;
     var walls = [];
+    
+    //reference to the paddle
+    var paddle;
+    //reference to the ball
+    var ball
     
     var   b2Vec2 = Box2D.Common.Math.b2Vec2
     ,  b2AABB = Box2D.Collision.b2AABB
@@ -53,37 +46,33 @@ function brick(){
     ;
     
     
-	var initRender = function(){
+	var setupWorld = function(){
+	
+		//setup camera
+		camera = new THREE.PerspectiveCamera( 50, gameSize.x / gameSize.y, 1, 10000 );
+		camera.position.z = ((document.getElementById("z").value) *1) || 1000;
+		camera.position.y = ((document.getElementById("y").value) *1) ||-2000
+		camera.rotation.x = ((document.getElementById("x").value) *1) ||0.9;
 		
-		collitionManager = new CollitionManager();
-
-	    camera = new THREE.PerspectiveCamera( 50, gameSize.x / gameSize.y, 1, 10000 );
-        camera.position.z = ((document.getElementById("z").value) *1) || 1000;
-        camera.position.y = ((document.getElementById("y").value) *1) ||-2000
-        camera.rotation.x = ((document.getElementById("x").value) *1) ||0.9;
-    
-        scene = new THREE.Scene();
-        
-
-
+		//create three world
+		scene = new THREE.Scene();
+		
+		//create box2d physics world
+		var world = new b2World(new b2Vec2(0, 0) // gravity
+		, true // allow sleep
+		);
      
-     var world = new b2World(
-           new b2Vec2(0, 0)    //gravity
-        ,  true                 //allow sleep
-     );
-     
-     
-     scene.world2 = world;   
+		//attach box2d world to the three js scene for reference
+		scene.box2dworld = world;   
 
+		
      
      var fixDef = new b2FixtureDef;
      fixDef.density = 11.0;
      fixDef.friction = 50;
      fixDef.linearDamping = 1005;
      fixDef.restitution = 0;
-     //fixDef.isSensor = true;
-     //fixDef.damping = 0.5
-	
+    
    //paddle
      var bodyDef = new b2BodyDef; 
      bodyDef.type = b2Body.b2_dynamicBody;
@@ -97,14 +86,10 @@ function brick(){
 	 var barbody = world.CreateBody(bodyDef);
 	 barbody.CreateFixture(fixDef)
 	 barbody.SetLinearDamping(5.9);
-	 window.bar =barbody;
+	 paddle =barbody;
      
 	 
-	 
-	 var debugDraw = new Box2D.Dynamics.b2DebugDraw;
-	 debugDraw.SetSprite(document.getElementById("test").getContext("2d"));
-	 
-	 
+
 	 var groundBodyDef = new b2BodyDef;
 	 groundBodyDef.type = b2Body.b2_staticBody; 
 	 groundBodyDef.position.Set(0,0);
@@ -136,19 +121,6 @@ function brick(){
      fixDef.friction = 0;
      fixDef.restitution = 1;
      
-     //ball
-     var bodyDef = new b2BodyDef;
-     bodyDef.type = b2Body.b2_dynamicBody;
-     bodyDef.userData = "ball";   
-	 fixDef.shape = new b2CircleShape(
-	         0.2 // radius
-	      );
-	 bodyDef.position.x = 0;
-	 bodyDef.position.y = -2;
-	 var ballbody = world.CreateBody(bodyDef);
-	 ballbody.CreateFixture(fixDef)	    
-	 window.b =ballbody;
-	 
  
 
         
@@ -205,34 +177,10 @@ function brick(){
         scene.add(bar.getMesh());
         bar.getMesh().castShadow = true;
          
-        var geometry = new THREE.SphereGeometry( 0.2, 16, 8 );
-        var color = Math.random() * 0xffffff;
-        console.log("color",color)
-        material = new THREE.MeshPhongMaterial( 
-        	{ color: 1677812.5796820712 
-        	  ,shininess: 50
-        	  //,wireframe:true
-        	} );
-
-        ball = new THREE.Mesh( geometry, material );
-        ball.useQuaternion = true;
-        ball.receiveShadow = true;
-        ball.castShadow = true;
-        ballbody.mesh = ball;
-        scene.add(ball);
-        
-        
-        	
-
-        
-       // bar.getMesh().material = material;
-        
-        //ball = new Ball();
-        
         
         
         geometry = new THREE.CubeGeometry( 10, 10, 0.3 );
-        //material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
+        material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
         plane = new THREE.Mesh( geometry, material );
         plane.position.z = -0.4;
         plane.receiveShadow = true;
@@ -247,52 +195,8 @@ function brick(){
             	} );
         
         
+       
         
-        function createBlock(x,y,xw,yw){
-
-            var color = Math.random() * 0xffffff;
-            console.log("color",color)
-            material = new THREE.MeshPhongMaterial( 
-            	{ color: color
-            	  ,shininess: 50
-            	  //,wireframe:true
-            	} );
-        	
-        	
-			geometry = new THREE.CubeGeometry(xw*2, yw*2, 0.5);
-			// material = new THREE.MeshBasicMaterial( { color: 0xff0000,
-			// shading: THREE.FlatShading, overdraw: true} );
-			plane = new THREE.Mesh(geometry, material);
-			plane.position.z = 0;
-			plane.position.x = x
-			plane.position.y = y
-			plane.receiveShadow = true;
-			scene.add(plane);
-        	
-        	
-        	var fixDef = new b2FixtureDef;
-            fixDef.density = 11.0;
-                       
-            fixDef.restitution = 0;
-            //fixDef.isSensor = true;
-            //fixDef.damping = 0.5
-       	 
-            var bodyDef = new b2BodyDef; 
-            bodyDef.type = b2Body.b2_staticBody;
-            bodyDef.userData = {'name':'brick','guiref':plane};
-			fixDef.shape = new b2PolygonShape();
-			fixDef.shape.SetAsBox(xw, yw)
-			bodyDef.position.x = x;
-			bodyDef.position.y = y;
-			
-			var barbody = world.CreateBody(bodyDef);
-			barbody.CreateFixture(fixDef)
-			barbody.SetLinearDamping(5.9);
-			window.bar = barbody;
-
-
-	       	 
-        }
 
         createBlock(-3,0,  0.49,0.25);
         createBlock(-2,0,  0.49,0.25);
@@ -338,14 +242,14 @@ function brick(){
         	var ballbody = null;
         	var brick = null;
         	
-        	if (bA.GetUserData() == 'ball'){
+        	if (bA.GetUserData() && bA.GetUserData().name == 'ball'){
         		ballbody = bA;
         		
         		if (bB.GetUserData() && bB.GetUserData().name == 'brick'){
         			brick = bB;
         		}
         	}
-        	if (bB.GetUserData() == 'ball'){
+        	if (bB.GetUserData() && bB.GetUserData().name == 'ball'){
         		ballbody = bB;
         		
         		if (bA.GetUserData() && bA.GetUserData().name == 'brick'){
@@ -378,7 +282,7 @@ function brick(){
         renderer.shadowCameraNear = 3;
         renderer.shadowCameraFar = camera.far;
         renderer.shadowCameraFov = 50;
-
+       // renderer.setClearColorHex ( 0xff0000, 0 );
         renderer.shadowMapBias = 0.0039;
         renderer.shadowMapDarkness = 0.5;
         renderer.shadowMapWidth = 1024;
@@ -389,15 +293,57 @@ function brick(){
         document.getElementById('3dcanvas').appendChild( renderer.domElement );
         
          
-        window.b.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),window.b.GetWorldCenter())
+       // ballBody.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),ballBody.GetWorldCenter())
         
         //createBall();
         
 	}
 	
+	function setupObjects(){
+		var body = createBall(0,-2);
+		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),body.GetWorldCenter())
+	}
+	
+    function createBlock(x,y,xw,yw){
+
+        var color = Math.random() * 0xffffff;
+        console.log("color",color)
+        material = new THREE.MeshPhongMaterial( 
+        	{ color: color
+        	  ,shininess: 50
+        	  //,wireframe:true
+        	} );
+    	
+    	
+		geometry = new THREE.CubeGeometry(xw*2, yw*2, 0.5);
+		plane = new THREE.Mesh(geometry, material);
+		plane.position.z = 0;
+		plane.position.x = x
+		plane.position.y = y
+		plane.receiveShadow = true;
+		scene.add(plane);
+    	
+    	var fixDef = new b2FixtureDef;
+        fixDef.density = 11.0;
+                   
+        fixDef.restitution = 0;
+   	 
+        var bodyDef = new b2BodyDef; 
+        bodyDef.type = b2Body.b2_staticBody;
+        bodyDef.userData = {'name':'brick','guiref':plane};
+		fixDef.shape = new b2PolygonShape();
+		fixDef.shape.SetAsBox(xw, yw)
+		bodyDef.position.x = x;
+		bodyDef.position.y = y;
+		
+		var barbody = scene.box2dworld.CreateBody(bodyDef);
+		barbody.CreateFixture(fixDef)
+		barbody.SetLinearDamping(5.9);
+
+    }
 	
 	
-	function createBall(){
+	function createBall(x,y){
 		
 		 var geometry = new THREE.SphereGeometry( 0.2, 16, 8 );
 	        var color = Math.random() * 0xffffff;
@@ -426,13 +372,15 @@ function brick(){
 		fixDef.shape = new b2CircleShape(
 		         0.2 // radius
 		      );
-		bodyDef.position.x = -4;
-		bodyDef.position.y = -4;
-		var ballbody = scene.world2.CreateBody(bodyDef);
+		bodyDef.position.x = x;
+		bodyDef.position.y = y;
+		var ballbody = scene.box2dworld.CreateBody(bodyDef);
 		ballbody.userData = {'name':'ball','guiref':ball};
 	    ballbody.CreateFixture(fixDef)
 	    
 	    balls.push(ballbody);
+	    
+	    return ballbody;
 	}
 	
 	var destroySchedule = [];
@@ -448,62 +396,65 @@ function brick(){
 	var maxSpeed = 10;
 	var speed = null;
 	
-    function animate() {
-
-    	//if (!inita){
-	        camera.position.z = ((document.getElementById("z").value) *1) || 1000;
-	        camera.position.y = ((document.getElementById("y").value) *1) ||-2000
-	        camera.rotation.x = ((document.getElementById("x").value) *1) ||0.9;
-	        inita = true;
-    	//}
-      
-	        
-	    if (destroySchedule.length){
-	    	
-	    	for (var i =0; i < destroySchedule.length; i++){
-	    		scene.world2.DestroyBody(destroySchedule[i]);
-	    		scene.remove( destroySchedule[i].GetUserData().guiref );
-	    	}
-	    	
-	    	destroySchedule = [];
-	    }  
-	    
+	
+	function syncObjects(){
 	    for (var i=0; i < balls.length;i++){
 	    	
 	    	balls[i].GetUserData().guiref.position.x = balls[i].GetPosition().x;
 	    	balls[i].GetUserData().guiref.position.y = balls[i].GetPosition().y;
+	    }		
+	}
+	
+	function maintainBallSpeed(){
+	    for (var i=0; i < balls.length;i++){
 	    	
-	    	//console.log('aaa', balls[i].GetPosition().y,balls[i].GetUserData().guiref.position.y)
-	    }
-	        
+		    speed = balls[i].GetLinearVelocity().Length()
+		    maxSpeed = 10;
+		    
+		    if (speed > 10){
+		    	balls[i].SetLinearDamping(0.5);
+		    }
+		    else if (speed < maxSpeed) {
+		    	balls[i].SetLinearDamping(0.0);
+		    }
+		    if (speed < 10){
+		    	//todO
+		    }
+		    
+	    }			
+	}
+	
+	function destroyScheduledBricks(){
+	    if (destroySchedule.length){
+	    	
+	    	for (var i =0; i < destroySchedule.length; i++){
+	    		scene.box2dworld.DestroyBody(destroySchedule[i]);
+	    		scene.remove( destroySchedule[i].GetUserData().guiref );
+	    	}
+	    	
+	    	destroySchedule = [];
+	    } 
+	}
+	
+    function animate() {
 
-	    //restrict max speedd ball
+	        camera.position.z = ((document.getElementById("z").value) *1) || 1000;
+	        camera.position.y = ((document.getElementById("y").value) *1) ||-2000
+	        camera.rotation.x = ((document.getElementById("x").value) *1) ||0.9;
+	        inita = true;
+
+      
 	    
-	    speed = b.GetLinearVelocity().Length()
-	    maxSpeed = 10;
+	    destroyScheduledBricks();
+	    syncObjects();   
+	    maintainBallSpeed();
 	        
-	   /// console.log(speed);
-	    
-	    if (speed > 10){
-	    	b.SetLinearDamping(0.5);
-	    }
-	    else if (speed < maxSpeed) {
-	        b.SetLinearDamping(0.0);
-	    }
-	        
-        scene.world2.Step(1 / 60, 10, 10);
-        //world.DrawDebugData();
-        scene.world2.ClearForces();
+        scene.box2dworld.Step(1 / 60, 10, 10);
+        scene.box2dworld.ClearForces();
       
         bar.update();
         
-        
-        //window.b.mesh
-        window.b.mesh.position.x = window.b.GetPosition().x;
-        window.b.mesh.position.y = window.b.GetPosition().y;
-        //window.b.mesh.quaternion.z = rotation.z();
-        //window.b.mesh.quaternion.w = rotation.w();
-        
+   
         
         bar.getMesh().position.x = bar.boxmodel.GetPosition().x;
         bar.getMesh().position.y = bar.boxmodel.GetPosition().y;
@@ -512,10 +463,7 @@ function brick(){
     	requestAnimationFrame( animate );
         
         
-        
-        //ball.update();
-       // mesh.rotation.x += 0.01;
-        //mesh.rotation.y += 0.02;
+       
         camera.lookAt( {'x':bar.getMesh().position.x,'y':bar.getMesh().position.y,'z':bar.getMesh().position.z} );
      
         camera.rotation.z = 0;
