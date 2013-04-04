@@ -125,14 +125,7 @@ function brick(){
 	 groundBox.SetAsEdge(new b2Vec2(5,-5), new b2Vec2(5, 5));
 	 _groundBody.CreateFixture(groundBoxDef);
 	 
-	 //groundBox.SetAsEdge(new b2Vec2(5, -5), new b2Vec2(-5,-5));
-//	 _groundBody.CreateFixture(groundBoxDef);
-//	 groundBox.SetAsEdge(new b2Vec2(6, 6), new b2Vec2(6, 0));
-//	 _groundBody.CreateFixture(groundBoxDef);
-	 
-	  
-	 
-	 
+
      
      //frixture def  
      var fixDef = new b2FixtureDef;
@@ -143,76 +136,18 @@ function brick(){
      //ball
      var bodyDef = new b2BodyDef;
      bodyDef.type = b2Body.b2_dynamicBody;
-        
+     bodyDef.userData = "ball";   
 	 fixDef.shape = new b2CircleShape(
 	         0.2 // radius
 	      );
 	 bodyDef.position.x = 0;
-	 bodyDef.position.y = 0;
+	 bodyDef.position.y = -2;
 	 var ballbody = world.CreateBody(bodyDef);
 	 ballbody.CreateFixture(fixDef)	    
 	 window.b =ballbody;
 	 
  
-//	 //lower wall
-//     var bodyDef = new b2BodyDef;
-//     bodyDef.type = b2Body.b2_staticBody;        
-//	 fixDef.shape = new b2PolygonShape();
-//	 fixDef.shape.SetAsBox(6,1)
-//	 bodyDef.position.x = 0;
-//	 bodyDef.position.y = -6;
-//	 var wallbody = world.CreateBody(bodyDef);
-//	 wallbody.CreateFixture(fixDef)	    
-//
-// 
-//	 //higer wall
-//	 var bodyDef = new b2BodyDef;
-//     bodyDef.type = b2Body.b2_staticBody;        
-//	 fixDef.shape = new b2PolygonShape();
-//	 fixDef.shape.SetAsBox(6,1)
-//	 bodyDef.position.x = 0;
-//	 bodyDef.position.y = 6;
-//	 var wallbody = world.CreateBody(bodyDef);
-//	 wallbody.CreateFixture(fixDef)	
-//	 
-//	 //left wall
-//	 var bodyDef = new b2BodyDef;
-//     bodyDef.type = b2Body.b2_staticBody;        
-//	 fixDef.shape = new b2PolygonShape();
-//	 fixDef.shape.SetAsBox(1,6)
-//	 bodyDef.position.x = -6;
-//	 bodyDef.position.y = 0;
-//	 var wallbody = world.CreateBody(bodyDef);
-//	 wallbody.CreateFixture(fixDef)		 
-//	 
-//	 //right wall
-//	 var bodyDef = new b2BodyDef;
-//     bodyDef.type = b2Body.b2_staticBody;        
-//	 fixDef.shape = new b2PolygonShape();
-//	 fixDef.shape.SetAsBox(1,6)
-//	 bodyDef.position.x = 6;
-//	 bodyDef.position.y = 0;
-//	 var wallbody = world.CreateBody(bodyDef);
-//	 wallbody.CreateFixture(fixDef)	
-//      
-//        
-//     //create joint
-//	 	 	 fixDef.shape = new b2PolygonShape();
-//	 fixDef.shape.SetAsBox(0.5,0.1)
-//	 bodyDef.position.x = 0;
-//	 bodyDef.position.y = 4;
-//	 var fakebody = world.CreateBody(bodyDef);
-//	 fakebody.CreateFixture(fixDef)
-//	 fakebody.SetLinearDamping(5.9);
-//	 
-//	 var jointDef = new b2PrismaticJointDef();
-//	 var worldAxis = new b2Vec2(0, 0);
-//	 //jointDef.collideConnected = true;
-//	 //jointDef.enableLimit = true;
-//	 //jointDef.lowerTranslation = 0.1;
-//	 //jointDef.upperTranslation = 0.1;
-//	 jointDef.Initialize(barbody, _groundBody, barbody.GetPosition(), new b2Vec2(0, 0));
-//	 world.CreateJoint(jointDef);
+
         
 	 var worldAxis = new b2Vec2(1.0, 0.0);
 	 
@@ -311,55 +246,112 @@ function brick(){
         
         
         function createBlock(x,y,xw,yw){
-            var fixDef = new b2FixtureDef;
-            fixDef.density = 11.0;
-            
-            
-            fixDef.restitution = 0;
-            //fixDef.isSensor = true;
-            //fixDef.damping = 0.5
-       	
- 
-            var bodyDef = new b2BodyDef; 
-            bodyDef.type = b2Body.b2_staticBody;
-            
-			fixDef.shape = new b2PolygonShape();
-			fixDef.shape.SetAsBox(xw, yw)
-			bodyDef.position.x = x;
-			bodyDef.position.y = y;
-			bodyDef.userData = "test"
-			var barbody = world.CreateBody(bodyDef);
-			barbody.CreateFixture(fixDef)
-			barbody.SetLinearDamping(5.9);
-			window.bar = barbody;
 
+        	
 			geometry = new THREE.CubeGeometry(xw*2, yw*2, 0.5);
 			// material = new THREE.MeshBasicMaterial( { color: 0xff0000,
 			// shading: THREE.FlatShading, overdraw: true} );
 			plane = new THREE.Mesh(geometry, material);
 			plane.position.z = 0;
-			plane.position.x = bodyDef.position.x
-			plane.position.y = bodyDef.position.y
+			plane.position.x = x
+			plane.position.y = y
 			plane.receiveShadow = true;
 			scene.add(plane);
+        	
+        	
+        	var fixDef = new b2FixtureDef;
+            fixDef.density = 11.0;
+                       
+            fixDef.restitution = 0;
+            //fixDef.isSensor = true;
+            //fixDef.damping = 0.5
+       	 
+            var bodyDef = new b2BodyDef; 
+            bodyDef.type = b2Body.b2_staticBody;
+            bodyDef.userData = {'name':'brick','guiref':plane};
+			fixDef.shape = new b2PolygonShape();
+			fixDef.shape.SetAsBox(xw, yw)
+			bodyDef.position.x = x;
+			bodyDef.position.y = y;
+			
+			var barbody = world.CreateBody(bodyDef);
+			barbody.CreateFixture(fixDef)
+			barbody.SetLinearDamping(5.9);
+			window.bar = barbody;
+
+
 	       	 
         }
-        
+
+        createBlock(-3,0,  0.49,0.25);
+        createBlock(-2,0,  0.49,0.25);
         createBlock(-1,0,  0.49,0.25);
         createBlock(0,0,  0.49,0.25);
         createBlock(1,0,  0.49,0.25);
         createBlock(2,0,  0.49,0.25);
+        createBlock(3,0,  0.49,0.25);
         
+        createBlock(-2.5,0.6,  0.49,0.25);
         createBlock(-1.5,0.6,  0.49,0.25);
+        createBlock(-0.5,0.6,  0.49,0.25);
         createBlock(0.5,0.6,  0.49,0.25);
         createBlock(1.5,0.6,  0.49,0.25);
         createBlock(2.5,0.6,  0.49,0.25);
+                
+        createBlock(-2.0,1.2,  0.49,0.25);
+        createBlock(-1.0,1.2,  0.49,0.25);
+        createBlock(-0.0,1.2,  0.49,0.25);
+        createBlock(1.0,1.2,  0.49,0.25);
+        createBlock(2.0,1.2,  0.49,0.25);
         
+        createBlock(-1.5,1.8,  0.49,0.25);
+        createBlock(-0.5,1.8,  0.49,0.25);
+        createBlock(0.5,1.8,  0.49,0.25);
+        createBlock(1.5,1.8,  0.49,0.25);
+        
+        createBlock(-1.0,2.4,  0.49,0.25);
+        createBlock(-0.0,2.4,  0.49,0.25);
+        createBlock(1.0,2.4,  0.49,0.25);
         
         var contactListener = new Box2D.Dynamics.b2ContactListener;
         contactListener.BeginContact = function(contact, manifold) {
            //do some stuff 
-        	console.log('col',contact,manifold)
+        	var fa = contact.GetFixtureA();
+        	var fb = contact.GetFixtureB();
+        	
+        	var bA = fa.GetBody();
+        	var bB = fb.GetBody();
+        	
+        	var ballbody = null;
+        	var brick = null;
+        	
+        	if (bA.GetUserData() == 'ball'){
+        		ballbody = bA;
+        		
+        		if (bB.GetUserData() && bB.GetUserData().name == 'brick'){
+        			brick = bB;
+        		}
+        	}
+        	if (bB.GetUserData() == 'ball'){
+        		ballbody = bB;
+        		
+        		if (bA.GetUserData() && bA.GetUserData().name == 'brick'){
+        			brick = bA;
+        		}
+        	}
+        	
+        	//if we have ball brick colition
+        	if (ballbody && brick){
+        		
+        		destroySchedule.push(brick);
+        		console.log('aapi')
+        	
+        	}
+        	
+        	
+        	console.log(bA.GetUserData(),bB.GetUserData())
+        	
+        	//console.log('col',contact,manifold)
         };
         world.SetContactListener(contactListener);
         
@@ -384,11 +376,11 @@ function brick(){
         document.getElementById('3dcanvas').appendChild( renderer.domElement );
         
          
-        window.b.ApplyImpulse(new Box2D.Common.Math.b2Vec2(1.2,1.5),window.b.GetWorldCenter())
+        window.b.ApplyImpulse(new Box2D.Common.Math.b2Vec2(1.1,1.2),window.b.GetWorldCenter())
         
 	}
 	
-	
+	var destroySchedule = [];
 	
 	var DO = [] 
 	var allow = true;
@@ -408,6 +400,17 @@ function brick(){
 	        inita = true;
     	//}
       
+	        
+	    if (destroySchedule.length){
+	    	
+	    	for (var i =0; i < destroySchedule.length; i++){
+	    		scene.world2.DestroyBody(destroySchedule[i]);
+	    		scene.remove( destroySchedule[i].GetUserData().guiref );
+	    	}
+	    	
+	    	destroySchedule = [];
+	    }    
+	        
 
 	    //restrict max speedd ball
 	    
