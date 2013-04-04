@@ -37,6 +37,22 @@ function brick(){
     var plane;
     var walls = [];
     
+    var   b2Vec2 = Box2D.Common.Math.b2Vec2
+    ,  b2AABB = Box2D.Collision.b2AABB
+ 	,	b2BodyDef = Box2D.Dynamics.b2BodyDef
+ 	,	b2Body = Box2D.Dynamics.b2Body
+ 	,	b2FixtureDef = Box2D.Dynamics.b2FixtureDef
+ 	,	b2Fixture = Box2D.Dynamics.b2Fixture
+ 	,	b2World = Box2D.Dynamics.b2World
+ 	,	b2MassData = Box2D.Collision.Shapes.b2MassData
+ 	,	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
+ 	,	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+ 	,	b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+    ,  b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef
+    ;  b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef
+    ;
+    
+    
 	var initRender = function(){
 		
 		collitionManager = new CollitionManager();
@@ -49,20 +65,7 @@ function brick(){
         scene = new THREE.Scene();
         
 
-        var   b2Vec2 = Box2D.Common.Math.b2Vec2
-        ,  b2AABB = Box2D.Collision.b2AABB
-     	,	b2BodyDef = Box2D.Dynamics.b2BodyDef
-     	,	b2Body = Box2D.Dynamics.b2Body
-     	,	b2FixtureDef = Box2D.Dynamics.b2FixtureDef
-     	,	b2Fixture = Box2D.Dynamics.b2Fixture
-     	,	b2World = Box2D.Dynamics.b2World
-     	,	b2MassData = Box2D.Collision.Shapes.b2MassData
-     	,	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
-     	,	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
-     	,	b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-        ,  b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef
-        ;  b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef
-        ;
+
      
      var world = new b2World(
            new b2Vec2(0, 0)    //gravity
@@ -228,10 +231,10 @@ function brick(){
         
         
         
-        geometry = new THREE.CubeGeometry( 10, 10, 1 );
+        geometry = new THREE.CubeGeometry( 10, 10, 0.3 );
         //material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
         plane = new THREE.Mesh( geometry, material );
-        plane.position.z = -0.7;
+        plane.position.z = -0.4;
         plane.receiveShadow = true;
         scene.add(plane);
  
@@ -247,6 +250,14 @@ function brick(){
         
         function createBlock(x,y,xw,yw){
 
+            var color = Math.random() * 0xffffff;
+            console.log("color",color)
+            material = new THREE.MeshPhongMaterial( 
+            	{ color: color
+            	  ,shininess: 50
+            	  //,wireframe:true
+            	} );
+        	
         	
 			geometry = new THREE.CubeGeometry(xw*2, yw*2, 0.5);
 			// material = new THREE.MeshBasicMaterial( { color: 0xff0000,
@@ -313,6 +324,8 @@ function brick(){
         createBlock(-0.0,2.4,  0.49,0.25);
         createBlock(1.0,2.4,  0.49,0.25);
         
+        
+        
         var contactListener = new Box2D.Dynamics.b2ContactListener;
         contactListener.BeginContact = function(contact, manifold) {
            //do some stuff 
@@ -376,11 +389,55 @@ function brick(){
         document.getElementById('3dcanvas').appendChild( renderer.domElement );
         
          
-        window.b.ApplyImpulse(new Box2D.Common.Math.b2Vec2(1.1,1.2),window.b.GetWorldCenter())
+        window.b.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),window.b.GetWorldCenter())
+        
+        //createBall();
         
 	}
 	
+	
+	
+	function createBall(){
+		
+		 var geometry = new THREE.SphereGeometry( 0.2, 16, 8 );
+	        var color = Math.random() * 0xffffff;
+	        console.log("color",color)
+	        material = new THREE.MeshPhongMaterial( 
+	        	{ color: color 
+	        	  ,shininess: 50
+	        	  //,wireframe:true
+	        	} );
+		
+		console.log('create ball')
+        var ball = new THREE.Mesh( geometry, material );
+        ball.useQuaternion = true;
+        ball.receiveShadow = true;
+        ball.castShadow = true;
+        scene.add(ball);
+		
+	    var fixDef = new b2FixtureDef;
+	    fixDef.density = 1.0;
+	    fixDef.friction = 0;
+	    fixDef.restitution = 1;
+	     
+	    var bodyDef = new b2BodyDef;
+	    bodyDef.type = b2Body.b2_dynamicBody;
+	    bodyDef.userData = {'name':'ball','guiref':ball};   
+		fixDef.shape = new b2CircleShape(
+		         0.2 // radius
+		      );
+		bodyDef.position.x = -4;
+		bodyDef.position.y = -4;
+		var ballbody = scene.world2.CreateBody(bodyDef);
+		ballbody.userData = {'name':'ball','guiref':ball};
+	    ballbody.CreateFixture(fixDef)
+	    
+	    balls.push(ballbody);
+	}
+	
 	var destroySchedule = [];
+	
+	var balls = [];
 	
 	var DO = [] 
 	var allow = true;
@@ -409,7 +466,15 @@ function brick(){
 	    	}
 	    	
 	    	destroySchedule = [];
-	    }    
+	    }  
+	    
+	    for (var i=0; i < balls.length;i++){
+	    	
+	    	balls[i].GetUserData().guiref.position.x = balls[i].GetPosition().x;
+	    	balls[i].GetUserData().guiref.position.y = balls[i].GetPosition().y;
+	    	
+	    	//console.log('aaa', balls[i].GetPosition().y,balls[i].GetUserData().guiref.position.y)
+	    }
 	        
 
 	    //restrict max speedd ball
