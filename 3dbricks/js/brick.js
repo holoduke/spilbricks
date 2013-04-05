@@ -262,8 +262,7 @@ function brick(){
         	if (ballbody && brick){
         		
         		destroySchedule.push(brick);
-        		console.log('aapi')
-        	
+      
         	}
         	
         	
@@ -322,12 +321,14 @@ function brick(){
 	function setupObjects(){
 		var body = createBall(0,-2);
 		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),body.GetWorldCenter())	
+
+		
 	}
 	
     function createBlock(x,y,xw,yw){
 
         var color = Math.random() * 0xffffff;
-        console.log("color",color)
+       // console.log("color",color)
         material = new THREE.MeshPhongMaterial( 
         	{ color: color
         	  ,shininess: 50
@@ -438,8 +439,13 @@ function brick(){
 		    	balls[i].SetLinearDamping(0.0);
 		    }
 		    if (speed < 10){
-		    	//todO
-		    }
+
+		    	var currentVelocity = balls[i].GetLinearVelocity();
+
+                currentVelocity.Set(currentVelocity.x * 1.1, currentVelocity.y * 1.1);
+                     
+                balls[i].ApplyForce(currentVelocity,balls[i].GetWorldCenter());	    	
+		   }
 		    
 	    }			
 	}
