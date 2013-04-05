@@ -176,6 +176,7 @@ function brick(){
         bar.boxmodel = barbody;
         scene.add(bar.getMesh());
         bar.getMesh().castShadow = true;
+        bar.getMesh().receiveShadow = true;
          
         
         
@@ -279,9 +280,9 @@ function brick(){
         renderer.shadowMapEnabled = true;
         renderer.shadowMapSoft = true;
         renderer.anti
-        renderer.shadowCameraNear = 3;
-        renderer.shadowCameraFar = camera.far;
-        renderer.shadowCameraFov = 50;
+//        renderer.shadowCameraNear = 3;
+//        renderer.shadowCameraFar = camera.far;
+//        renderer.shadowCameraFov = 50;
        // renderer.setClearColorHex ( 0xff0000, 0 );
         renderer.shadowMapBias = 0.0039;
         renderer.shadowMapDarkness = 0.5;
@@ -297,11 +298,30 @@ function brick(){
         
         //createBall();
         
+//        var camera2 = new THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+//        camera2.position.z = 1000;
+//
+//       var scene2 = new THREE.Scene();
+////
+//        geometry = new THREE.CubeGeometry( 200, 200, 200 );
+//
+////
+//        mesh = new THREE.Mesh( geometry, material );
+//        scene2.addObject( mesh );
+////
+//        var renderer2 = new THREE.CanvasRenderer();
+//        renderer2.setClearColorHex ( 0xff0000, 0 );
+//        renderer2.setSize( gameSize.x, gameSize.y );
+// 
+//        document.getElementById('3dcanvas2').appendChild( renderer2.domElement );
+        //document.body.appendChild( renderer2.domElement );
+        
+        
 	}
 	
 	function setupObjects(){
 		var body = createBall(0,-2);
-		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),body.GetWorldCenter())
+		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),body.GetWorldCenter())	
 	}
 	
     function createBlock(x,y,xw,yw){
