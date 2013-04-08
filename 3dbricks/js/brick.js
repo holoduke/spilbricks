@@ -119,15 +119,15 @@ function brick(){
    
    //edge 1
    vertexArray.push(new b2Vec2( 0.5, 0 ));
-   vertexArray.push(new b2Vec2( 0.468, 0.038));
-   vertexArray.push(new b2Vec2( 0.4, 0.07));
-   vertexArray.push(new b2Vec2( 0.324, 0.086));
-   vertexArray.push(new b2Vec2( 0.2, 0.1));
+   vertexArray.push(new b2Vec2( 0.434, 0.028));
+   vertexArray.push(new b2Vec2( 0.352, 0.054));
+   vertexArray.push(new b2Vec2( 0.216, 0.088));
+   vertexArray.push(new b2Vec2( 0.062, 0.1));
    
-   vertexArray.push(new b2Vec2( -0.2,  0.1));
-   vertexArray.push(new b2Vec2( -0.324,  0.086));     
-   vertexArray.push(new b2Vec2( -0.4, 0.07));
-   vertexArray.push(new b2Vec2( -0.468, 0.038));
+   vertexArray.push(new b2Vec2( -0.062,  0.1));
+   vertexArray.push(new b2Vec2( -0.216,  0.088));     
+   vertexArray.push(new b2Vec2( -0.352, 0.054));
+   vertexArray.push(new b2Vec2( -0.434, 0.028));
    vertexArray.push(new b2Vec2( -0.5, 0));
    
 //   vertexArray.push(new b2Vec2( -0.47, 0.08));
