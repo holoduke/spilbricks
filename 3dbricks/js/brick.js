@@ -408,8 +408,8 @@ function brick(){
 	
 	function setupObjects(){
 		
-		var body = createBall(0,-2);
-		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.0,0.65),body.GetWorldCenter())
+		var body = createBall(0,-3);
+		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.1,0.65),body.GetWorldCenter())
 		  
 //				var body = createBall(0,-2);
 //		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(4.7,1.0),body.GetWorldCenter())	
@@ -560,7 +560,7 @@ function brick(){
 	    for (var i=0; i < balls.length;i++){
 	    	
 		    speed = balls[i].GetLinearVelocity().Length()
-		    maxSpeed = 3;
+		    maxSpeed = 5;
 		    
 		    if (speed > maxSpeed){
 		    	balls[i].SetLinearDamping(0.5);
