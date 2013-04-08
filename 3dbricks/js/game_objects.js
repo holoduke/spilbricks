@@ -204,9 +204,7 @@ function pBar(){
 
 	this.update = function(){
 		
-		window.a = this.boxmodel;
 		var dir = getDir();
-		console.log('update ',dir)
 		if (dir > 0) {
 			this.boxmodel.ApplyImpulse(new Box2D.Common.Math.b2Vec2(2.2,0),this.boxmodel.GetWorldCenter())
 			

@@ -1,4 +1,4 @@
-
+    
 function brick(){
 	
 	var gameSize = {x:1000, y:600};
@@ -37,12 +37,13 @@ function brick(){
  	,	b2FixtureDef = Box2D.Dynamics.b2FixtureDef
  	,	b2Fixture = Box2D.Dynamics.b2Fixture
  	,	b2World = Box2D.Dynamics.b2World
+ 	,	b2PolygonDef = Box2D.Dynamics.b2PolygonDef
  	,	b2MassData = Box2D.Collision.Shapes.b2MassData
  	,	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
  	,	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
  	,	b2DebugDraw = Box2D.Dynamics.b2DebugDraw
     ,  b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef
-    ;  b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef
+    ,  b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef
     ;
     
     
@@ -74,13 +75,70 @@ function brick(){
      fixDef.restitution = 0;
     
    //paddle
+     
+      
+//   
+//   var bodyDef = new b2BodyDef; 
+//   var bodyPoly = new b2PolygonShape();
+//   var bodyFix = new b2FixtureDef()
+//   
+//   bodyDef.type = b2Body.b2_dynamicBody;
+//   var vertexArray = new Array();
+//   
+//   vertexArray.push(new b2Vec2( -0.1, -0.1));
+//   vertexArray.push(new b2Vec2( 0.1, -0.1));
+//   vertexArray.push(new b2Vec2( 0.1, 0.1));
+//   vertexArray.push(new b2Vec2( -0.1, 0.1));
+//   
+// //b2Vec2 Array then Vertex Count
+// bodyPoly.SetAsArray(vertexArray, vertexArray.length);
+// bodyFix.shape = bodyPoly;
+//// bodyFix.density = 0.5;
+//// bodyFix.friction = 0.5;
+// //bodyFix.restitution = 0.5;
+// bodyDef.position.Set(0, -4);
+// var body = world.CreateBody(bodyDef);
+// body.CreateFixture(bodyFix);
+// body.SetLinearDamping(5.9);
+//    
+// paddle =body;
+// barbody = body;
+      
+     
      var bodyDef = new b2BodyDef; 
      bodyDef.type = b2Body.b2_dynamicBody;
-   //  bodyDef.fixedRotation = true;
-     
-     
-	 fixDef.shape = new b2PolygonShape();
-	 fixDef.shape.SetAsBox(0.5,0.1)
+     bodyPoly = new b2PolygonShape(); 
+   //  bodyDef.fixedRotation = true;   
+	 fixDef.shape = bodyPoly;
+	 
+
+	// fixDef.shape.SetAsBox(0.5,0.1)
+	 var vertexArray = [];
+	 vertexArray.push(new b2Vec2( -0.5, -0.1));
+   vertexArray.push(new b2Vec2( 0.5, -0.1));
+   
+   //edge 1
+   vertexArray.push(new b2Vec2( 0.5, 0 ));
+   vertexArray.push(new b2Vec2( 0.468, 0.038));
+   vertexArray.push(new b2Vec2( 0.4, 0.07));
+   vertexArray.push(new b2Vec2( 0.324, 0.086));
+   vertexArray.push(new b2Vec2( 0.2, 0.1));
+   
+   vertexArray.push(new b2Vec2( -0.2,  0.1));
+   vertexArray.push(new b2Vec2( -0.324,  0.086));     
+   vertexArray.push(new b2Vec2( -0.4, 0.07));
+   vertexArray.push(new b2Vec2( -0.468, 0.038));
+   vertexArray.push(new b2Vec2( -0.5, 0));
+   
+//   vertexArray.push(new b2Vec2( -0.47, 0.08));
+//   vertexArray.push(new b2Vec2( -0.49, 0.07));
+   //vertexArray.push(new b2Vec2( -0.5, -0.1));
+   
+   //vertexArray.push(new b2Vec2( -0.5, 0.1));
+	 
+	 bodyPoly.SetAsArray(vertexArray, vertexArray.length);
+	 	 
+	 
 	 bodyDef.position.x = 0;
 	 bodyDef.position.y = -4;
 	 var barbody = world.CreateBody(bodyDef);
@@ -138,15 +196,7 @@ function brick(){
 	 world.CreateJoint(prismaticJointDef);
 	 
          
-//	 b2PrismaticJointDef jointDef;
-//	 b2Vec2 worldAxis(1.0f, 0.0f);
-//	 jointDef.collideConnected = true;
-//	 jointDef.Initialize(_paddleBody, _groundBody, 
-//	   _paddleBody->GetWorldCenter(), worldAxis);
-//	 _world->CreateJoint(&jointDef);
-//	 
-	 
-	 
+
         //light
         var ambient = new THREE.AmbientLight( 0x101010 );
 		scene.add( ambient );
@@ -179,9 +229,15 @@ function brick(){
         bar.getMesh().receiveShadow = true;
          
         
+        var color = Math.random() * 0xffffff;
+        material = new THREE.MeshPhongMaterial( 
+	        	{ color: color 
+	        	  ,shininess: 50
+	        	  //,wireframe:true
+	        	} );
         
         geometry = new THREE.CubeGeometry( 10, 10, 0.3 );
-        material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
+        //material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
         plane = new THREE.Mesh( geometry, material );
         plane.position.z = -0.4;
         plane.receiveShadow = true;
@@ -199,35 +255,7 @@ function brick(){
        
         
 
-        createBlock(-3,0,  0.49,0.25);
-        createBlock(-2,0,  0.49,0.25);
-        createBlock(-1,0,  0.49,0.25);
-        createBlock(0,0,  0.49,0.25);
-        createBlock(1,0,  0.49,0.25);
-        createBlock(2,0,  0.49,0.25);
-        createBlock(3,0,  0.49,0.25);
-        
-        createBlock(-2.5,0.6,  0.49,0.25);
-        createBlock(-1.5,0.6,  0.49,0.25);
-        createBlock(-0.5,0.6,  0.49,0.25);
-        createBlock(0.5,0.6,  0.49,0.25);
-        createBlock(1.5,0.6,  0.49,0.25);
-        createBlock(2.5,0.6,  0.49,0.25);
-                
-        createBlock(-2.0,1.2,  0.49,0.25);
-        createBlock(-1.0,1.2,  0.49,0.25);
-        createBlock(-0.0,1.2,  0.49,0.25);
-        createBlock(1.0,1.2,  0.49,0.25);
-        createBlock(2.0,1.2,  0.49,0.25);
-        
-        createBlock(-1.5,1.8,  0.49,0.25);
-        createBlock(-0.5,1.8,  0.49,0.25);
-        createBlock(0.5,1.8,  0.49,0.25);
-        createBlock(1.5,1.8,  0.49,0.25);
-        
-        createBlock(-1.0,2.4,  0.49,0.25);
-        createBlock(-0.0,2.4,  0.49,0.25);
-        createBlock(1.0,2.4,  0.49,0.25);
+
         
         
         
@@ -266,7 +294,7 @@ function brick(){
         	}
         	
         	
-        	console.log(bA.GetUserData(),bB.GetUserData())
+        	//console.log(bA.GetUserData(),bB.GetUserData())
         	
         	//console.log('col',contact,manifold)
         };
@@ -290,38 +318,141 @@ function brick(){
         renderer.setSize( gameSize.x, gameSize.y );
         
 
+        
+        
+        
+        
+        
+        
         document.getElementById('3dcanvas').appendChild( renderer.domElement );
         
          
-       // ballBody.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),ballBody.GetWorldCenter())
+
         
-        //createBall();
         
-//        var camera2 = new THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-//        camera2.position.z = 1000;
-//
-//       var scene2 = new THREE.Scene();
-////
-//        geometry = new THREE.CubeGeometry( 200, 200, 200 );
-//
-////
-//        mesh = new THREE.Mesh( geometry, material );
-//        scene2.addObject( mesh );
-////
-//        var renderer2 = new THREE.CanvasRenderer();
-//        renderer2.setClearColorHex ( 0xff0000, 0 );
-//        renderer2.setSize( gameSize.x, gameSize.y );
+        
+//        var angularSpeed = 0.2; // revolutions per second
+//        var lastTime = 0;
 // 
-//        document.getElementById('3dcanvas2').appendChild( renderer2.domElement );
-        //document.body.appendChild( renderer2.domElement );
+//        var renderer2 = new THREE.WebGLRenderer();
+//        renderer2.setSize(gameSize.x, gameSize.y);
+//        document.body.appendChild(renderer2.domElement);
+// 
+//        // camera
+//        var camera2 = new THREE.PerspectiveCamera(50, gameSize.x / gameSize.y, 1, 1000 );
+//        camera2.position.z = 700;
+// 
+//        // scene
+//        var scene2 = new THREE.Scene();
+// 
+//        // cube
+//        var colors = [0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00];
+//        var materials = [];
+// 
+//        for (var n = 0; n < 6; n++) {
+//            materials.push([new THREE.MeshBasicMaterial({
+//                color: colors[n]
+//            })]);
+//        }
+// 
+//       var  material = new THREE.MeshPhongMaterial( 
+//	        	{ color: 214234.23423423
+//	        	  ,shininess: 50
+//	        	  //,wireframe:true
+//	        	} );
+//        
+//       var material = new THREE.MeshNormalMaterial( { transparent: true, opacity: 0.5 } );
+//       
+//        var cube = new THREE.Mesh(new THREE.CubeGeometry(300, 300, 300, 1, 1, 1, material), material);
+//        cube.overdraw = true;
+//        scene2.add(cube);   
+// 
+//
+//        
+//         
+//        
+//       	 document.getElementById('3dcanvas2').appendChild( renderer2.domElement );
+//      // document.body.appendChild( renderer2.domElement );
+//        
+//        renderer2.render( scene2, camera2 );
+//
+//        var r = 0;
+//        function a(lastTime, angularSpeed){
+//        	
+//        	setTimeout(function(){
+//        		
+//        		//alert('ab')
+//        	
+////        	     	var date = new Date();
+////        	        var time = date.getTime();
+////        	        var timeDiff = time - lastTime;
+////        	        var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
+//       	            cube.rotation.y += 0.01;
+////        	        lastTime = time;
+//        	        // render
+//        	        renderer2.render(scene2, camera2);
+//        	        
+//        	        a(lastTime, angularSpeed);
+//        	},50)
+//        	
+//        }
+//          
+//        var angularSpeed = 0.2; // revolutions per second
+//        var lastTime = 0;
+//        a(lastTime, angularSpeed); 
         
         
 	}
 	
+	
+	
 	function setupObjects(){
+		
 		var body = createBall(0,-2);
-		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,1.0),body.GetWorldCenter())	
+		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.0,0.65),body.GetWorldCenter())
+		  
+//				var body = createBall(0,-2);
+//		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(4.7,1.0),body.GetWorldCenter())	
+//		
+//				var body = createBall(2,-2);
+//		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(6.7,1.0),body.GetWorldCenter())	
+//		
+//				var body = createBall(0,-3);
+//		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(9.7,1.0),body.GetWorldCenter())	
+//		
+//				var body = createBall(4,-2);
+//		body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(0.7,9.0),body.GetWorldCenter())	
 
+		
+        createBlock(-3,0,  0.49,0.25);
+        createBlock(-2,0,  0.49,0.25);
+        createBlock(-1,0,  0.49,0.25);
+        createBlock(0,0,  0.49,0.25);
+        createBlock(1,0,  0.49,0.25);
+        createBlock(2,0,  0.49,0.25);
+        createBlock(3,0,  0.49,0.25);
+        
+        createBlock(-2.5,0.6,  0.49,0.25);
+        createBlock(-1.5,0.6,  0.49,0.25);
+        createBlock(-0.5,0.6,  0.49,0.25);
+        createBlock(0.5,0.6,  0.49,0.25);
+        createBlock(1.5,0.6,  0.49,0.25);
+        createBlock(2.5,0.6,  0.49,0.25);
+                
+        createBlock(-2.0,1.2,  0.49,0.25);
+        createBlock(-1.0,1.2,  0.49,0.25);
+        createBlock(-0.0,1.2,  0.49,0.25);
+        createBlock(1.0,1.2,  0.49,0.25);
+        createBlock(2.0,1.2,  0.49,0.25);
+        
+        createBlock(-1.5,1.8,  0.49,0.25);
+        createBlock(-0.5,1.8,  0.49,0.25);
+        createBlock(0.5,1.8,  0.49,0.25);
+        createBlock(1.5,1.8,  0.49,0.25);
+        
+        createBlock(-1.0,2.4,  0.49,0.25);
+        createBlock(-0.0,2.4,  0.49,0.25);
+        createBlock(1.0,2.4,  0.49,0.25);
 		
 	}
 	
@@ -334,7 +465,6 @@ function brick(){
         	  ,shininess: 50
         	  //,wireframe:true
         	} );
-    	
     	
 		geometry = new THREE.CubeGeometry(xw*2, yw*2, 0.5);
 		plane = new THREE.Mesh(geometry, material);
@@ -430,21 +560,23 @@ function brick(){
 	    for (var i=0; i < balls.length;i++){
 	    	
 		    speed = balls[i].GetLinearVelocity().Length()
-		    maxSpeed = 10;
+		    maxSpeed = 3;
 		    
-		    if (speed > 10){
+		    if (speed > maxSpeed){
 		    	balls[i].SetLinearDamping(0.5);
 		    }
-		    else if (speed < maxSpeed) {
+		    else if (speed <= maxSpeed) {
 		    	balls[i].SetLinearDamping(0.0);
 		    }
-		    if (speed < 10){
+		    if (speed < maxSpeed){
 
 		    	var currentVelocity = balls[i].GetLinearVelocity();
 
-                currentVelocity.Set(currentVelocity.x * 1.1, currentVelocity.y * 1.1);
+                currentVelocity.Set(currentVelocity.x * 1.05, currentVelocity.y * 1.05);
                      
-                balls[i].ApplyForce(currentVelocity,balls[i].GetWorldCenter());	    	
+                balls[i].ApplyForce(currentVelocity,balls[i].GetWorldCenter());
+                
+                balls[i].SetLinearDamping(0.0);
 		   }
 		    
 	    }			
