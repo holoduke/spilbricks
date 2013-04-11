@@ -5,19 +5,11 @@ function BrickGame() {
 		y : 600
 	};
 	
-	//three js
 	var camera, scene, renderer;
 	var geometry, material, mesh;
-
-	init = function() {
-
-		setupWorld();
-		animate();
-	}
-
-	var groundBody;
-
 	var syncedObjects = [];
+	var paused = false;
+	var stopped = false;
 	//reference to the paddle
 	var paddle;
 	
@@ -35,7 +27,65 @@ function BrickGame() {
 	b2DebugDraw = Box2D.Dynamics.b2DebugDraw, 
 	b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef, 
 	b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef;
-
+	
+	//helper function to ensure stop/start/pause/reset happens at the right time in animate loop
+	var runBefore = null;
+	var runAfter = null;
+	
+	this.init = function(){
+		setupWorld();
+	}
+	
+	this.start = function(){
+		stopped = false;
+		paused = false;
+		
+		setupObjects();
+		setupLighting();
+		animate();
+	}
+	
+	this.stop = function(){
+		runAfter = function(){
+			runAfter = null
+			that.start();
+			return false;
+		}	
+	}
+	
+	this.reset = function(){
+		
+		var that =this;
+		
+		runBefore = function(){
+			runBefore = null
+			cleanup();
+			
+			runAfter = function(){
+				runAfter = null
+				that.start();
+				return false;
+			}	
+			
+			return true;
+		}
+	}
+	
+	this.togglePause = function(){
+		
+		if (paused){
+			animate();
+		}
+		else{
+			runBefore = function(){
+				runBefore = null;
+				return false;
+			};
+		}
+		
+		paused = !paused;
+	} 
+	
 	var setupWorld = function() {
 
 		//setup camera
@@ -52,33 +102,7 @@ function BrickGame() {
 		//attach box2d world to the three js scene for reference
 		scene.box2dworld = world;
 
-		//create scene objects
-		setupObjects();
-		
-			
-		//setup lighting
-		var ambient = new THREE.AmbientLight(0x101010);
-		scene.add(ambient);
-
-		directionalLight = new THREE.DirectionalLight(0xffffff);
-		directionalLight.position.set(0, 0, 2).normalize();
-		directionalLight.castShadow = true;
-		scene.add(directionalLight);
-
-		pointLight = new THREE.PointLight(0xffaa00);
-		scene.add(pointLight);
-		pointLight.position.z = 3;
-		pointLight.position.y = -1;
-
-		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-			color : 0xffaa00
-		}));
-		lightMesh.scale.x = lightMesh.scale.y = lightMesh.scale.z = 0.05;
-		lightMesh.position = pointLight.position;
-		scene.add(lightMesh);
-
-
-
+	
 		//assign contact listener for all colitions
 		var contactListener = new Box2D.Dynamics.b2ContactListener;
 		contactListener.BeginContact = beginContactListener;
@@ -181,6 +205,29 @@ function BrickGame() {
 
 	}
 
+	function setupLighting(){
+		//setup lighting
+		var ambient = new THREE.AmbientLight(0x101010);
+		scene.add(ambient);
+
+		directionalLight = new THREE.DirectionalLight(0xffffff);
+		directionalLight.position.set(0, 0, 2).normalize();
+		directionalLight.castShadow = true;
+		scene.add(directionalLight);
+
+		pointLight = new THREE.PointLight(0xffaa00);
+		scene.add(pointLight);
+		pointLight.position.z = 3;
+		pointLight.position.y = -1;
+
+		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+			color : 0xffaa00
+		}));
+		lightMesh.scale.x = lightMesh.scale.y = lightMesh.scale.z = 0.05;
+		lightMesh.position = pointLight.position;
+		scene.add(lightMesh);
+	}
+	
 	var paddle;
 	function setupObjects() {
 
@@ -266,18 +313,35 @@ function BrickGame() {
 			
 		//setup ground plane
 		var color = Math.random() * 0xffffff;
+		console.log(color)
 		material = new THREE.MeshPhongMaterial({
-			color : color,
-			shininess : 50
+			color : 13757355.379216421,
+			shininess : 50,
+			transparent: true, opacity: 0.2
 		//,wireframe:true
 		});
-
+		//var material = new THREE.MeshNormalMaterial( { transparent: true, opacity: 0.5 } );
 		geometry = new THREE.CubeGeometry(10, 10, 0.01);
 		//material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
 		plane = new THREE.Mesh(geometry, material);
 		plane.position.z = -0.4;
 		plane.receiveShadow = true;
 		scene.add(plane);
+	}
+
+	/**
+	 * removes all physical and graphical bodies from world.
+	 */	
+	function cleanup() {
+
+		for ( var i = scene.children.length - 1; i >= 0; i--) {
+			scene.remove(scene.children[i]);
+		}
+		
+		var body;
+		while (body = scene.box2dworld.GetBodyList().GetNext()){
+			scene.box2dworld.DestroyBody(body);
+		}
 	}
 
 	/**
@@ -290,8 +354,6 @@ function BrickGame() {
 
 		var bA = fa.GetBody();
 		var bB = fb.GetBody();
-
-		console.log(bA.userData, bB.userData);
 
 		var ballbody = null;
 		var brick = null;
@@ -314,7 +376,6 @@ function BrickGame() {
 		// if we have ball brick colition we schedule the brick to be removed in next animate
 		if (ballbody && brick) {
 			destroySchedule.push(brick);
-
 		}
 	}
 	
@@ -333,6 +394,10 @@ function BrickGame() {
 
 	function animate() {
 
+		if (runBefore){
+			if (!runBefore()) {return;};
+		}
+		
 		camera.position.z = 4;
 		camera.position.y = -9
 		camera.rotation.x = 5
@@ -362,17 +427,18 @@ function BrickGame() {
 		camera.rotation.z = 0;
 
 		var diff = 0 - paddle.mesh.position.x;
-		camera.position.x = -diff / 1.2;
-		camera.position.y += 1.2
+		camera.position.x = -diff / 2; 
+		camera.position.y += 2.5
 
 		//render 3d scene
 		renderer.render(scene, camera);
 
+		event.pub("postAnimate");
+		
+		if (runAfter){
+			if (!runAfter()) {return};
+		}
+		
 		requestAnimationFrame(animate);
 	}
-
-	init();
 }
-
-var game = new BrickGame()
-
