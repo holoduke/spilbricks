@@ -88,6 +88,22 @@ function Ball(scene,world){
 		this.maintainSpeed();
 	}
 	
+	var dies = false;
+	this.validate = function(){
+		
+		if (this.body.GetPosition().y > -4.5){
+			dies = false;
+		}
+		
+		if (dies) return;
+		
+		if (this.body.GetPosition().y < -4.5){
+			dies = true;
+			
+			event.pub("game.dies");
+		}
+	}
+	
 }
 
 Ball.prototype = new GameObject();

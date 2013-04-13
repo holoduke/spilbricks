@@ -7,7 +7,7 @@ function Paddle(scene,world){
 	
 	this.mesh = null
 	
-	var getGeometry = function(x, y, xw, yw){
+	var getGeometry = function(x, y){
 		
        var geometry = new THREE.CubeGeometry( 1, 0.2, 0.2 );
 
@@ -18,12 +18,12 @@ function Paddle(scene,world){
         	} );
         
         mesh = new THREE.Mesh( geometry, material );
-        mesh.position.y = -4
+        mesh.position.y = y
         mesh.position.z = 0;
         return mesh;
 	}
 	
-	var getBody = function(x, y, xw, yw){
+	var getBody = function(x, y){
 		
 		var fixDef = new b2FixtureDef;
 		fixDef.density = 11.0;
@@ -54,8 +54,8 @@ function Paddle(scene,world){
 
 		bodyPoly.SetAsArray(vertexArray, vertexArray.length);
 
-		bodyDef.position.x = 0;
-		bodyDef.position.y = -4;
+		bodyDef.position.x = x;
+		bodyDef.position.y = y;
 		var barbody = world.CreateBody(bodyDef);
 		barbody.CreateFixture(fixDef)
 		barbody.SetLinearDamping(5.9);
@@ -118,14 +118,14 @@ function Paddle(scene,world){
 	}
 	
 	
-	this.create = function(x, y, xw, yw){
+	this.create = function(x, y){
 		
-		var paddle = getGeometry(x, y, xw, yw);
+		var paddle = getGeometry(x, y);
 		scene.add(paddle);
 		
 		this.mesh = paddle;
 		
-		this.body = getBody(x, y, xw, yw);
+		this.body = getBody(x, y);
 		this.body.userData = {
 			'name' : 'paddle',
 			'guiref' : paddle  

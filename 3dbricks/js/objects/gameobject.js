@@ -8,7 +8,12 @@ function GameObject(){
 		this.body.userData.guiref.position.y = this.body.GetPosition().y;
 	}
 	
+	this.validate = function(){
+		
+	}
+	
 	this.destroy = function(){
 		
 	}
+	
 }
