@@ -7,17 +7,132 @@
 
 <body>
 
+<div style="">
+<input id="x" type=text value=1.2>x</input>
+<input id="y" type=text value=-1800>y</input>
+<input id="z" type=text value=1823>z</input>
+</div>
+
+<div style="">
+<input type="button" value="camera1" onclick="camera1()"></input>
+<input type="button" value="camera2" onclick="camera2()"></input>
+<input type="button" value="camera3" onclick="camera3()"></input>
+</div>
+
+<script>
+function camera1(){
+	moveTo(0.5,-1500,2623);
+}
+function camera3(){
+	moveTo(0,-2000,3000);
+}
+
+function camera2(){
+	
+	moveTo(1.2,-2800,1423);
+	
+//	document.getElementById('x').value = 1.2;
+	//document.getElementById('y').value = -2800;
+	//document.getElementById('z').value =1423;
+}
+
+var steps = 10;
+function moveTo(x,y,z){
+	var waitx = 0;
+	
+	var xStepSize = Math.abs((x - document.getElementById('x').value * 1) /55);
+	var yStepSize = Math.abs((y - document.getElementById('y').value * 1) / 55);
+	var zStepSize = Math.abs((z - document.getElementById('z').value * 1) /55);
+	
+	console.log('move to ',x,y,z,xStepSize,yStepSize,zStepSize)
+	function ani(){
+	
+		var cx = document.getElementById('x').value * 1;
+		var cy = document.getElementById('y').value * 1;
+		var cz = document.getElementById('z').value * 1;
+		var ix = -1;
+		var iy = -1;
+		var iz = -1;
+		
+		if (x > cx){
+			ix = 1;
+		}
+		if (y > cy){
+			iy = 1;
+		}
+		if (z > cz){
+			iz = 1;
+		}
+		
+		var px = false;
+		var py = false;
+		var pz = false;
+		
+	
+		var waitxnow = 0;
+		
+		setTimeout(function(){
+			
+			//document.getElementById('x').value = cx + ix;
+			document.getElementById('y').value = Math.round((cy + (iy * yStepSize)) * 100)/100;
+			document.getElementById('z').value = Math.round((cz + (iz * zStepSize)) * 100)/100;
+			
+			if (waitx > 30){
+				console.log('go')
+			document.getElementById('x').value = Math.round((cx + (ix * xStepSize)) * 100)/100;
+			//document.getElementById('z').value = cz + iz;
+			}
+			else{
+				waitx++;
+			}
+			
+			
+			if (document.getElementById('y').value / y  > 0.99 && document.getElementById('y').value / y < 1.01 ){
+				//alert(document.getElementById('y').value /  y)
+				py = true;
+			}
+			if (document.getElementById('x').value / x  > 0.99 && document.getElementById('x').value / x < 1.01 ){
+				//alert(document.getElementById('y').value /  y)
+				px = true;
+			}
+			if (document.getElementById('z').value / z  > 0.99 && document.getElementById('z').value / z < 1.01 ){
+				//alert(document.getElementById('y').value /  y)
+				pz = true;
+			}
+			
+			if (px && py && pz) return
+			
+			ani();
+		},10);
+	}
+	
+	ani();
+	
+}
+
+
+</script>
+
+
 <div style="border-radius:10px;width:820px;height:670px;margin: 0 auto;border:4px solid #888888;position:relative;">
 
 	<div style="height:630px; width:800px;margin-top:10px;margin-left:10px;position:relative;">
-		<canvas id="score" style="position:absolute;top:0"></canvas>
-		<canvas id="brick" style="position:absolute;top:50px;left:0;"></canvas> 
-		<canvas id="splash" style="position:absolute;top:50px;"></canvas>  
-	</div>	
+		<div id="3dcanvas" style="border-radius:10px;width:800px;height:630px;"></div>
+	</div>
 </div>
 
+
+
+
+<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/three.min.js"></script>
 <script type="text/javascript" src="js/util.js"></script>
+<<<<<<< Updated upstream
 <script type="text/javascript" src="js/game_state_machine.js"></script>
+=======
+<script type="text/javascript" src="https://raw.github.com/schteppe/cannon.js/master/build/cannon.js"></script>
+
+
+>>>>>>> Stashed changes
 <script type="text/javascript" src="js/game_objects.js"></script>
 <script type="text/javascript" src="js/explosion.js"></script>
 <script type="text/javascript" src="js/brick_mechanics.js"></script>

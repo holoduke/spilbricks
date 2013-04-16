@@ -47,6 +47,8 @@ function BrickGame() {
 		setupObjects();
 		setupLighting();
 		animate();
+		
+		event.pub("game.start");
 	}
 	
 	this.stop = function(){
