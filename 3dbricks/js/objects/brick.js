@@ -3,9 +3,11 @@ function Brick(scene,world){
 	var scene = scene;
 	var world = world;
 	
-	var getGeometry = function(x, y, xw, yw){
+	var getGeometry = function(x, y, xw, yw,color){
 		
-		var color = Math.random() * 0xffffff;
+		//var color = Math.random() * 0xffffff;
+		
+		//console.log(color);
 		var material = new THREE.MeshPhongMaterial({
 			color : color,
 			shininess : 50
@@ -13,10 +15,12 @@ function Brick(scene,world){
 		
 		var geometry = new THREE.CubeGeometry(xw * 2, yw * 2, 0.5);
 		var mesh = new THREE.Mesh(geometry, material);
+		
 		mesh.position.z = 0;
 		mesh.position.x = x
 		mesh.position.y = y
-		mesh.receiveShadow = true;
+		mesh.receiveShadow = false;
+		mesh.castShadow = true;
 		scene.add(mesh);
 		
 		return mesh;
@@ -44,9 +48,9 @@ function Brick(scene,world){
 		return barbody
 	}
 	
-	this.create = function(x, y, xw, yw){
+	this.create = function(x, y, xw, yw,color){
 		
-		var brick = getGeometry(x, y, xw, yw);
+		var brick = getGeometry(x, y, xw, yw,color);
 		scene.add(brick);
 		
 		var body = getBody(x, y, xw, yw);

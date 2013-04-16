@@ -126,6 +126,10 @@ function BrickGame() {
 		}
 	} 
 	
+	this.getScene = function(){
+		return scene;
+	}
+	
 	var setupWorld = function() {
 
 		//setup camera
@@ -133,6 +137,7 @@ function BrickGame() {
 
 		//create three world
 		scene = new THREE.Scene();
+		scene.fog = new THREE.Fog( 0x59472b, 0.1, 20 );
 
 		//create box2d physics world
 		var world = new b2World(new b2Vec2(0, -1) // gravity
@@ -153,6 +158,9 @@ function BrickGame() {
 			'alpha' : true,
 			antialias : true
 		});
+		
+		renderer.shadowMapEnabled = true;
+		//renderer.shadowMapType = THREE.PCFShadowMap;
 //		renderer = new THREE.CanvasRenderer({
 //			'alpha' : true,
 //			antialias : true
@@ -166,9 +174,9 @@ function BrickGame() {
 //		renderer.shadowCameraFov = 50;
 //		renderer.setClearColorHex(0xff0000, 0);
 //		renderer.shadowMapBias = 0.0039;
-//		renderer.shadowMapDarkness = 0.5;
-//		renderer.shadowMapWidth = 1024;
-//		renderer.shadowMapHeight = 1024;
+		renderer.shadowMapDarkness = 0.5;
+		renderer.shadowMapWidth = 1024;
+		renderer.shadowMapHeight = 1024;
 		renderer.setSize(gameSize.x, gameSize.y);
 
 		document.getElementById('3dcanvas').appendChild(renderer.domElement);
@@ -182,7 +190,7 @@ function BrickGame() {
 		directionalLight = new THREE.DirectionalLight(0xffffff);
 		directionalLight.position.set(0, 0, 2).normalize();
 		directionalLight.castShadow = true;
-		scene.add(directionalLight);
+		//scene.add(directionalLight);
 
 		pointLight = new THREE.PointLight(0xffaa00);
 		scene.add(pointLight);
@@ -195,6 +203,30 @@ function BrickGame() {
 		lightMesh.scale.x = lightMesh.scale.y = lightMesh.scale.z = 0.05;
 		lightMesh.position = pointLight.position;
 		scene.add(lightMesh);
+		
+		
+		var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI, 1 );
+		light.position.set( 0, 2, 5 );
+		light.target.position.set( 0, 0, 0 );
+
+		light.castShadow = true;
+
+		light.shadowCameraNear = 1;
+		light.shadowCameraFar = 10
+		light.shadowCameraFov = 100;
+
+		//light.shadowCameraVisible = true;
+
+	//	light.shadowBias = 0.0001;
+		//light.shadowDarkness = 0.5;
+
+		//light.shadowMapWidth = 5;
+		//light.shadowMapHeight = 5;
+
+		scene.add( light );
+		
+		
+		
 	}
 	
 	function setupObjects() {
@@ -217,35 +249,35 @@ function BrickGame() {
 		syncedObjects.push(ball);
 		
 		//create bricks
-		new Brick(scene,scene.box2dworld).create(-3, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-2, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-1, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(0, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(1, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(2, 0, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(3, 0, 0.49, 0.25);
+		new Brick(scene,scene.box2dworld).create(-3, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-2, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-1, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(0, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(1, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(2, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(3, 0, 0.49, 0.25,11808294.026639538 );
 
-		new Brick(scene,scene.box2dworld).create(-2.5, 0.6, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-1.5, 0.6, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-0.5, 0.6, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(0.5, 0.6, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(1.5, 0.6, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(2.5, 0.6, 0.49, 0.25);
+		new Brick(scene,scene.box2dworld).create(-2.5, 0.6, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-1.5, 0.6, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-0.5, 0.6, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(0.5, 0.6, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(1.5, 0.6, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(2.5, 0.6, 0.49, 0.25,11808294.026639538 );
 
-		new Brick(scene,scene.box2dworld).create(-2.0, 1.2, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-1.0, 1.2, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-0.0, 1.2, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(1.0, 1.2, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(2.0, 1.2, 0.49, 0.25);
+		new Brick(scene,scene.box2dworld).create(-2.0, 1.2, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-1.0, 1.2, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-0.0, 1.2, 0.49, 0.25,6356160.3086433 );
+		new Brick(scene,scene.box2dworld).create(1.0, 1.2, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(2.0, 1.2, 0.49, 0.25,11808294.026639538 );
 
-		new Brick(scene,scene.box2dworld).create(-1.5, 1.8, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-0.5, 1.8, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(0.5, 1.8, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(1.5, 1.8, 0.49, 0.25);
+		new Brick(scene,scene.box2dworld).create(-1.5, 1.8, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-0.5, 1.8, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(0.5, 1.8, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(1.5, 1.8, 0.49, 0.25,11808294.026639538 );
 
-		new Brick(scene,scene.box2dworld).create(-1.0, 2.4, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(-0.0, 2.4, 0.49, 0.25);
-		new Brick(scene,scene.box2dworld).create(1.0, 2.4, 0.49, 0.25);
+		new Brick(scene,scene.box2dworld).create(-1.0, 2.4, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(-0.0, 2.4, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(1.0, 2.4, 0.49, 0.25,11808294.026639538 );
 		
 		brickCount = 25;	
 		//create square bounderies
@@ -286,20 +318,18 @@ function BrickGame() {
 
 		scene.box2dworld.CreateJoint(prismaticJointDef);
 			
-		//setup ground plane
-		var color = Math.random() * 0xffffff;
-		material = new THREE.MeshPhongMaterial({
-			color : 13757355.379216421,
-			shininess : 50,
-			transparent: true, opacity: 0.2
-		});
-		//var material = new THREE.MeshNormalMaterial( { transparent: true, opacity: 0.5 } );
-		geometry = new THREE.CubeGeometry(10, 10, 0.01);
-		//material = new THREE.MeshBasicMaterial( { color: 0xff0000,  shading: THREE.FlatShading, overdraw: true} );
-		plane = new THREE.Mesh(geometry, material);
-		plane.position.z = -0.4;
-		plane.receiveShadow = true;
-		scene.add(plane);
+		var geometry = new THREE.PlaneGeometry( 10, 10 );
+		var planeMaterial = new THREE.MeshPhongMaterial( { color: 132332,opacity: 1,transparent: false } );
+		//laneMaterial.ambient = planeMaterial.color;
+
+		var ground = new THREE.Mesh( geometry, planeMaterial );
+
+		ground.position.set( 0, 0, -0.20 );
+
+		ground.castShadow = false;
+		ground.receiveShadow = true;
+
+		scene.add( ground );		
 	}
 
 	/**
@@ -349,6 +379,10 @@ function BrickGame() {
 				brick = bA;
 			}
 		}
+		
+		if (bA.userData && bA.userData.name == 'paddle' || bB.userData && bB.userData.name == 'paddle') {
+			event.pub("game.paddleHit");
+		}
 
 		// if we have ball brick colition we schedule the brick to be removed in next animate
 		if (ballbody && brick && !brick.destroyed) {
@@ -356,7 +390,7 @@ function BrickGame() {
 			destroySchedule.push(brick);
 			
 			brickCount--
-			event.pub("game.brickDestroy",{'bricksLeft':brickCount});
+			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick});
 			
 			//var m = manifold.getWorldManifold();
 			//var f:V2 = V2.multiplyN(m.normal, ballbody.GetMass() * 170);
@@ -378,13 +412,41 @@ function BrickGame() {
 			destroySchedule = [];
 		}
 	}
+	
+	var addPreRenderCb =[];
+	this.addPreRenderCb = function(cb){
+		addPreRenderCb.push(cb)
+	}
+	
+	var addPostRenderCb =[];
+	this.addPostRenderCb = function(cb){
+		addPostRenderCb.push(cb)
+	}
+	
+	function executePrerenderCb(){
+		for (var i=0,len=addPreRenderCb.length;i<len;i++){
+			addPreRenderCb[i]();
+		}
+		
+		addPreRenderCb = [];
+	}
+	
+	function executePostrenderCb(){
+		for (var i=0,len=addPostRenderCb.length;i<len;i++){
+			addPostRenderCb[i]();
+		}
+		
+		addPostRenderCb = [];
+	}
 
+	
+	
 	function animate() {
 		if (runBefore){
 			if (!runBefore()) {return;};
 		}
 		
-		
+		executePrerenderCb();
 		
 		camera.position.z = 4;
 		camera.position.y = -9
@@ -434,6 +496,8 @@ function BrickGame() {
 		if (runAfter){
 			if (!runAfter()) {return};
 		}
+		
+		executePostrenderCb();
 		
 		requestAnimationFrame(animate);
 	}

@@ -4,6 +4,7 @@ var game = (function(){
 	var level = 1;
 	var lifes = maxLifes;
 	var score = 0;
+	var bonusMultiplier = 1;
 	
 	var gameSize = {
 			x : 1000,
@@ -22,7 +23,7 @@ var game = (function(){
 		
 		if (!lifes){
 			game.reset(function(){
-				level = 0;
+				level = 1;
 				score = 0;
 				hud.drawGameStatistics(score,level);
 				
@@ -50,8 +51,12 @@ var game = (function(){
 		
 	event.sub("game.brickDestroy",function(e){
 		
-		score += 100;
+		var brickScore = 100 * bonusMultiplier;
+		score += brickScore;
 		hud.drawGameStatistics(score,level);
+		bonusMultiplier+=1;
+		
+		onBrickHit(e.brick,brickScore)
 		
 		if (!e.bricksLeft){
 			
@@ -65,14 +70,103 @@ var game = (function(){
 				});
 			});			
 		}
+	});
+	
+	event.sub("game.paddleHit",function(){
+		
+		bonusMultiplier = 1;
 	})
 	
+	
+	var onBrickHit = function(brick,brickScore){
+		
+		//console.log('on brick hit ',brick.GetPosition());
+		//return;
+	  	var size = 0.3;
+        var height = 0.05;
+        var curveSegments =4
+        var font = "helvetiker";
+        var weight = "bold";
+        var style = "normal";
+        
+        var textGeo = new THREE.TextGeometry( brickScore, {
+        	size: size,
+			height: height,
+			curveSegments: curveSegments,
+
+			font: font,
+			weight: weight,
+			style: style,
+
+			material: 0,
+			extrudeMaterial: 1});
+        textGeo.computeBoundingBox();
+		textGeo.computeVertexNormals();
+			
+		material = new THREE.MeshFaceMaterial( [ 
+		                    					new THREE.MeshPhongMaterial( { color: 0xffffff, shading: THREE.SmoothShading,transparent: true, opacity: 0.8 } ), // front
+		                    					new THREE.MeshPhongMaterial( { color: 0xffffff, shading: THREE.SmoothShading,transparent: true, opacity: 0.8 } ) // side
+		                    				] );
+		
+		textMesh1 = new THREE.Mesh( textGeo, material );
+
+		textMesh1.position.x = brick.GetPosition().x - 0.3;
+		textMesh1.position.y = brick.GetPosition().y;
+		textMesh1.position.z = 0.5;
+		textMesh1.rotation.x = 1.7;
+        
+        
+		parent = new THREE.Object3D();
+		parent.castShadow = true;
+		parent.receiveShadow = false;
+		//parent.position.y = 100;
+
+		gameScene.add( parent );
+        
+		parent.add( textMesh1 );
+		
+		(function(mesh,parent){
+			
+			var opacityStep = 0.02
+			var scaleStep = 0.02;
+			
+			function animate(){
+				
+				game.addPreRenderCb(function(){
+					
+					mesh.material.materials[0].opacity -= opacityStep;
+					mesh.material.materials[1].opacity -= opacityStep;
+					mesh.scale.x += scaleStep;
+					mesh.scale.y += scaleStep;
+					
+					game.addPostRenderCb(function(){
+					
+						if (mesh.material.materials[0].opacity >0){
+							animate();
+						}
+						else{
+							gameScene.remove(parent);
+						}
+						
+					});
+				})
+			}
+			
+			animate();
+					
+		})(textMesh1,parent);
+		
+		window.p = textMesh1;
+	}
+	
+	
+
 	var hud = new Hud();
 	
 	game.init();
 	game.start();
 	
-	
+	var gameScene = game.getScene();	
 	return;
 	
 	window.gam = this;

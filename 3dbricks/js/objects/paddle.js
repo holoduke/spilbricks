@@ -19,6 +19,7 @@ function Paddle(scene,world){
         
         mesh = new THREE.Mesh( geometry, material );
         mesh.position.y = y
+        mesh.castShadow = true;
         mesh.position.z = 0;
         return mesh;
 	}

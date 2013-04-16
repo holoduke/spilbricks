@@ -12,6 +12,7 @@ function Hud(){
 		
  		ctx = canvas.getContext("2d");
  		ctx.canvas.width  = 1000;
+ 		ctx.globalAlpha = 0.5;
  		ctx.canvas.height = 600;
 	}
 	
@@ -30,7 +31,7 @@ function Hud(){
 //		ctx.fillRect(0, 0, 1000, 40);
  		
  		ctx.fillStyle = "#000000";
-		ctx.fillRect(0, 560, 1000, 40);
+		ctx.fillRect(0, 560, 1000, 40,0.5);
  		
  		ctx.fillStyle = "#eeeeee";
 		ctx.font = "normal 24pt sans-serif"
