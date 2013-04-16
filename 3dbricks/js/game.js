@@ -17,9 +17,8 @@ var game = (function(){
 		
 		hud.drawGameStatistics(score,level);
 	});
-	
-	
-	event.sub("game.dies",function(){
+		
+	event.sub("game.ball.dies",function(){
 		
 		if (!lifes){
 			game.reset(function(){

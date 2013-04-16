@@ -448,9 +448,9 @@ function BrickGame() {
 		
 		executePrerenderCb();
 		
-		camera.position.z = 4;
-		camera.position.y = -9
-		camera.rotation.x = 5
+		camera.position.z = window.z || 4;
+		camera.position.y = window.y || -9
+		//camera.rotation.x = window.x || 5
 
 		//remove bricks beeing hit
 		destroyScheduledBricks();
@@ -486,9 +486,10 @@ function BrickGame() {
 
 		var diff = 0 - paddle.mesh.position.x;
 		camera.position.x = -diff / 2; 
+		camera.position.z += ball.body.GetPosition().y / 20
 		
 		scene.box2dworld.SetGravity(new b2Vec2((diff / 6), -1));
-		camera.position.y += 2.5
+		camera.position.y += 2.5 - (ball.body.GetPosition().y / 20)
 
 		//render 3d scene
 		renderer.render(scene, camera);

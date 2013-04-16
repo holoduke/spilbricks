@@ -100,7 +100,7 @@ function Ball(scene,world){
 		if (this.body.GetPosition().y < -4.5){
 			dies = true;
 			
-			event.pub("game.dies");
+			event.pub("game.ball.dies");
 		}
 	}
 	
