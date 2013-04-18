@@ -30,10 +30,10 @@ function Hud(){
 // 		ctx.fillStyle = "#333333";
 //		ctx.fillRect(0, 0, 1000, 40);
  		
- 		ctx.fillStyle = "#000000";
+ 		ctx.fillStyle = "#ffffff";
 		ctx.fillRect(0, 560, 1000, 40,0.5);
  		
- 		ctx.fillStyle = "#eeeeee";
+ 		ctx.fillStyle = "#333333";
 		ctx.font = "normal 24pt sans-serif"
 		ctx.fillText("score "+ score,20,588);
 		ctx.fillText("level "+ level,880,588)

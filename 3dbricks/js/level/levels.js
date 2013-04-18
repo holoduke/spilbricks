@@ -37,3 +37,10 @@ var level2 =
 		[ 1, 1, 1, 1 ,1, 1, 1 ],
 		]
 }
+
+function generateLevel(level){
+	
+	
+	
+}
+
