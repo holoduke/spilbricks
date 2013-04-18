@@ -69,8 +69,8 @@ var game = (function(){
 			})
 		}
 		else if (e.brick.userData.type=="bigBall"){
-			console.log('create big ball')
-			window.pop = e.ball.userData.guiref;
+			//console.log('create big ball')
+			//window.pop = e.ball.userData.guiref;
 			
 			e.ball.userData.guiref.scale.x= 1;
 			e.ball.userData.guiref.scale.y= 1; 
@@ -151,8 +151,10 @@ var game = (function(){
 		
 		//game.destroyBrick(brick);
 		
+		//make sure that brick is not active anymore (gui objects stays)
 		game.addPreRenderCb(function(){
 			brick.SetActive(false);
+			brick.userData.guiref.castShadow = false;
 		});
 		
 		(function(mesh,parent,brick){
