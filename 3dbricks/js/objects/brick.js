@@ -10,7 +10,9 @@ function Brick(scene,world){
 		//console.log(color);
 		var material = new THREE.MeshPhongMaterial({
 			color : color,
-			shininess : 50
+			shininess : 50,
+			opacity : 1,
+			transparent: true
 		});
 		
 		var geometry = new THREE.CubeGeometry(xw * 2, yw * 2, 0.5);

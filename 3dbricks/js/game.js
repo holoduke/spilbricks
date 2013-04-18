@@ -100,10 +100,12 @@ var game = (function(){
 	})
 	
 	
+	/**
+	 * callback when brick got hit
+	 * we add a score indicator to the brick
+	 */
 	var onBrickHit = function(brick,brickScore){
 		
-		//console.log('on brick hit ',brick.GetPosition());
-		//return;
 	  	var size = 0.3;
         var height = 0.05;
         var curveSegments =4
@@ -147,7 +149,13 @@ var game = (function(){
         
 		parent.add( textMesh1 );
 		
-		(function(mesh,parent){
+		//game.destroyBrick(brick);
+		
+		game.addPreRenderCb(function(){
+			brick.SetActive(false);
+		});
+		
+		(function(mesh,parent,brick){
 			
 			var opacityStep = 0.02
 			var scaleStep = 0.02;
@@ -159,7 +167,10 @@ var game = (function(){
 					mesh.material.materials[0].opacity -= opacityStep;
 					mesh.material.materials[1].opacity -= opacityStep;
 					mesh.scale.x += scaleStep;
-					mesh.scale.y += scaleStep;
+					mesh.scale.y += scaleStep; 
+					
+					brick.userData.guiref.material.color.setHex(0xffffff);
+					brick.userData.guiref.material.opacity -= opacityStep*1.7;
 					
 					game.addPostRenderCb(function(){
 					
@@ -167,6 +178,7 @@ var game = (function(){
 							animate();
 						}
 						else{
+							game.destroyBrick(brick);
 							gameScene.remove(parent);
 						}
 						
@@ -176,9 +188,7 @@ var game = (function(){
 			
 			animate();
 					
-		})(textMesh1,parent);
-		
-		window.p = textMesh1;
+		})(textMesh1,parent,brick);
 	}
 	
 	
@@ -191,7 +201,7 @@ var game = (function(){
 	var gameScene = game.getScene();	
 	return;
 	
-	window.gam = this;
+	window.gamee = this;
 		
 		        var angularSpeed = 1.2; // revolutions per second
 		        var lastTime = 0;
@@ -324,7 +334,7 @@ var game = (function(){
 		       
 		        var cube = new THREE.Mesh(new THREE.CubeGeometry(300, 300, 300, 1, 1, 1, material), material);
 		        cube.overdraw = true;
-		        scene.add(cube);   
+	//	        scene.add(cube);   
 		 
 		
 		        

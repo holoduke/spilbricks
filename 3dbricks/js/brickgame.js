@@ -135,6 +135,10 @@ function BrickGame() {
 		return balls.length;
 	}
 	
+	this.destroyBrick = function(brick){
+		destroySchedule.push(brick);
+	}
+	
 	this.togglePause = function(cb){
 		
 		runBefore = function(){
@@ -440,7 +444,7 @@ function BrickGame() {
 		// if we have ball brick colition we schedule the brick to be removed in next animate
 		else if (ballbody && brick && !brick.destroyed) {
 			brick.destroyed = true;
-			destroySchedule.push(brick);
+			
 			
 			brickCount--
 			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick,'ball':ballbody});
