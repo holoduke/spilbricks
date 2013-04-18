@@ -7,6 +7,7 @@ function Ball(scene,world){
 	var getGeometry = function(){
 		
 		var geometry = new THREE.SphereGeometry(0.2, 16, 8);
+		geometry.dynamic = true;
 		var color = Math.random() * 0xffffff;
 		material = new THREE.MeshPhongMaterial({
 			color : color,
@@ -22,7 +23,7 @@ function Ball(scene,world){
 	}
 	
 	var getBody = function(x,y){
-		
+	
 		var bodyDef = new b2BodyDef;
 		bodyDef.type = b2Body.b2_dynamicBody;
 
@@ -40,6 +41,7 @@ function Ball(scene,world){
 		scene.add(ball);
 		
 		var body = getBody(x,y);
+		
 		body.userData = {
 			'name' : 'ball',
 			'guiref' : ball  
@@ -100,7 +102,7 @@ function Ball(scene,world){
 		if (this.body.GetPosition().y < -4.5){
 			dies = true;
 			
-			event.pub("game.ball.dies");
+			event.pub("game.ball.dies",this);
 		}
 	}
 	

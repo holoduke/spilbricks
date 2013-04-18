@@ -12,10 +12,11 @@ function BrickGame() {
 	var stopped = false;
 	//reference to the paddle
 	var paddle;
-	var ball;
+	var balls = [];
 	var paddlePosX = 0;
 	var paddlePosY = -4;
 	var brickCount = 0;
+	var that = this;
 	
 	b2Vec2 = Box2D.Common.Math.b2Vec2, 
 	b2AABB = Box2D.Collision.b2AABB, 
@@ -59,15 +60,27 @@ function BrickGame() {
 		}	
 	}
 	
+	window.aap = balls;
+	
 	this.reset = function(cb){
 		
 		var that =this;
 	
 		runBefore = function(){
+			
+			that.addPreRenderCb(function(){
+						
+				if (balls.length >= 0){
+					for (var i=balls.length-1; i >= 0; i--){
+						that.destroyBall(balls[i]);
+					}
+				}
+			})
+				
 			runBefore = null;
 			paused = true;
 			cleanup();
-			
+				
 			runAfter = function(){
 				runAfter = null
 				that.start();
@@ -84,7 +97,7 @@ function BrickGame() {
 		runBefore = function(){
 			runBefore = null
 			
-			var ballBody = ball.body;
+			var ballBody = balls[0].body;
 			ballBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(0,0));
 			ballBody.SetPosition(new Box2D.Common.Math.b2Vec2(paddlePosX,-3.5));
 			
@@ -104,6 +117,22 @@ function BrickGame() {
 			
 			return true;
 		}
+	}
+	
+	this.createBonusBall = function(x,y){
+		var ball = createBall(x,y)
+		ball.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2((Math.random() < 0.5 ? -1 : 1) * Math.random(),(Math.random() < 0.5 ? -1 : 1) * Math.random()), ball.body.GetWorldCenter())
+	}
+	
+	this.destroyBall = function(ball){
+		scene.remove(ball.body.userData.guiref);
+		scene.box2dworld.DestroyBody(ball.body);
+		balls.splice(balls.indexOf(ball),1);
+		syncedObjects.splice(syncedObjects.indexOf(ball),1);
+	}
+	
+	this.getBallCount = function(){
+		return balls.length;
 	}
 	
 	this.togglePause = function(cb){
@@ -191,18 +220,18 @@ function BrickGame() {
 		directionalLight.position.set(0, 0, 2).normalize();
 		directionalLight.castShadow = true;
 		//scene.add(directionalLight);
-
+//
 		pointLight = new THREE.PointLight(0xffaa00);
 		scene.add(pointLight);
 		pointLight.position.z = 3;
 		pointLight.position.y = -1;
 
-		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-			color : 0xffaa00
-		}));
-		lightMesh.scale.x = lightMesh.scale.y = lightMesh.scale.z = 0.05;
-		lightMesh.position = pointLight.position;
-		scene.add(lightMesh);
+//		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+//			color : 0xffaa00
+//		}));
+//		lightMesh.scale.x = lightMesh.scale.y = lightMesh.scale.z = 0.05;
+//		lightMesh.position = pointLight.position;
+//		scene.add(lightMesh);
 		
 		
 		var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI, 1 );
@@ -217,16 +246,16 @@ function BrickGame() {
 
 		//light.shadowCameraVisible = true;
 
-	//	light.shadowBias = 0.0001;
-		//light.shadowDarkness = 0.5;
-
-		//light.shadowMapWidth = 5;
-		//light.shadowMapHeight = 5;
-
 		scene.add( light );
+	}
+	
+	function createBall(x,y) {
+		var ball = new Ball(scene,scene.box2dworld);
+		ball.create(x,y);
+		balls.push(ball);
+		syncedObjects.push(ball);
 		
-		
-		
+		return ball;
 	}
 	
 	function setupObjects() {
@@ -237,14 +266,15 @@ function BrickGame() {
 		syncedObjects.push(paddle);
 		
 		//create ball
-		ball = new Ball(scene,scene.box2dworld);
-		var ballBody = ball.create(paddlePosX,-3.5);
+		var ball = createBall(paddlePosX,-3.5);
+		var ballBody = ball.body;
 		
 		var direction = paddleBody.GetPosition().Copy()
 		direction.Subtract(new Box2D.Common.Math.b2Vec2(0,0))
 		direction.Normalize();
 		direction.Multiply(-1);
 		
+		//ballBody.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-0.5,-0.05),ballBody.GetWorldCenter())
 		ballBody.ApplyImpulse(direction, ballBody.GetWorldCenter())
 		syncedObjects.push(ball);
 		
@@ -252,7 +282,7 @@ function BrickGame() {
 		new Brick(scene,scene.box2dworld).create(-3, 0, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(-2, 0, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(-1, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(0, 0, 0.49, 0.25,11808294.026639538 );
+		new Brick(scene,scene.box2dworld).create(0, 0, 0.49, 0.25,11808294.026639538,"bigBall" );
 		new Brick(scene,scene.box2dworld).create(1, 0, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(2, 0, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(3, 0, 0.49, 0.25,11808294.026639538 );
@@ -266,7 +296,7 @@ function BrickGame() {
 
 		new Brick(scene,scene.box2dworld).create(-2.0, 1.2, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(-1.0, 1.2, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-0.0, 1.2, 0.49, 0.25,6356160.3086433 );
+		new Brick(scene,scene.box2dworld).create(-0.0, 1.2, 0.49, 0.25,6356160.3086433,"extraBalls");		
 		new Brick(scene,scene.box2dworld).create(1.0, 1.2, 0.49, 0.25,11808294.026639538 );
 		new Brick(scene,scene.box2dworld).create(2.0, 1.2, 0.49, 0.25,11808294.026639538 );
 
@@ -319,8 +349,8 @@ function BrickGame() {
 		scene.box2dworld.CreateJoint(prismaticJointDef);
 			
 		var geometry = new THREE.PlaneGeometry( 10, 10 );
-		var planeMaterial = new THREE.MeshPhongMaterial( { color: 132332,opacity: 1,transparent: false } );
-		//laneMaterial.ambient = planeMaterial.color;
+		var planeMaterial = new THREE.MeshPhongMaterial( { color: 132332,opacity: 0.5,transparent: false } );
+		//laneMaterial.ambient = planeMaterial.color; 
 
 		var ground = new THREE.Mesh( geometry, planeMaterial );
 
@@ -381,16 +411,39 @@ function BrickGame() {
 		}
 		
 		if (bA.userData && bA.userData.name == 'paddle' || bB.userData && bB.userData.name == 'paddle') {
-			event.pub("game.paddleHit");
+			
+			var ball = null;
+			if (bA.userData && bA.userData.name == 'ball'){
+				ball = bA
+			}
+			else if (bB.userData && bB.userData.name == 'ball'){
+				ball = bB;
+			}
+			
+			//this piece of ugly logic makes sure that the ball always
+			//bouches back with a high enough y velocity when it hits the paddle
+			//otherwise it could be possible that the return angle of the ball is too wide
+			if (ball){
+				var lv = ball.GetLinearVelocity();
+				
+				if (lv.y < 1.5 && lv.y >= 0){
+					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y+3))
+				}
+				else if (lv.y > -1.5 && lv.y <= 0){
+					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y-3))
+				}
+			}
+			
+			event.pub("game.paddleHit",paddle);
 		}
 
 		// if we have ball brick colition we schedule the brick to be removed in next animate
-		if (ballbody && brick && !brick.destroyed) {
+		else if (ballbody && brick && !brick.destroyed) {
 			brick.destroyed = true;
 			destroySchedule.push(brick);
 			
 			brickCount--
-			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick});
+			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick,'ball':ballbody});
 			
 			//var m = manifold.getWorldManifold();
 			//var f:V2 = V2.multiplyN(m.normal, ballbody.GetMass() * 170);
@@ -486,11 +539,17 @@ function BrickGame() {
 
 		var diff = 0 - paddle.mesh.position.x;
 		camera.position.x = -diff / 2; 
-		camera.position.z += ball.body.GetPosition().y / 20
+		
+		if (balls.length){
+			camera.position.z += balls[0].body.GetPosition().y / 20
+		}
 		
 		scene.box2dworld.SetGravity(new b2Vec2((diff / 6), -1));
-		camera.position.y += 2.5 - (ball.body.GetPosition().y / 20)
-
+		
+		if (balls.length){
+			camera.position.y += 2.5 - (balls[0].body.GetPosition().y / 20)
+		}
+		
 		//render 3d scene
 		renderer.render(scene, camera);
 

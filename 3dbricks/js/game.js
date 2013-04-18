@@ -18,9 +18,9 @@ var game = (function(){
 		hud.drawGameStatistics(score,level);
 	});
 		
-	event.sub("game.ball.dies",function(){
+	event.sub("game.ball.dies",function(ball){
 		
-		if (!lifes){
+		if (game.getBallCount() == 1 && !lifes){
 			game.reset(function(){
 				level = 1;
 				score = 0;
@@ -36,16 +36,23 @@ var game = (function(){
 			
 			return;
 		}
+		else if (game.getBallCount() == 1){
 		
-		lifes--;
-		
-		game.resetBall(function(){
-			game.togglePause(function(){
-				setTimeout(function(){
-					game.togglePause();
-				},1000)
+			lifes--;
+			
+			game.resetBall(function(){
+				game.togglePause(function(){
+					setTimeout(function(){
+						game.togglePause();
+					},1000)
+				});
 			});
-		});
+		}
+		else{
+			game.addPreRenderCb(function(){
+				game.destroyBall(ball);
+			});
+		}
 	});
 		
 	event.sub("game.brickDestroy",function(e){
@@ -54,6 +61,22 @@ var game = (function(){
 		score += brickScore;
 		hud.drawGameStatistics(score,level);
 		bonusMultiplier+=1;
+		
+		if (e.brick.userData.type == 'extraBalls'){
+			game.addPreRenderCb(function(){
+				game.createBonusBall(3,3);
+				game.createBonusBall(-3,3);
+			})
+		}
+		else if (e.brick.userData.type=="bigBall"){
+			console.log('create big ball')
+			window.pop = e.ball.userData.guiref;
+			
+			e.ball.userData.guiref.scale.x= 1;
+			e.ball.userData.guiref.scale.y= 1; 
+			e.ball.userData.guiref.scale.z= 1;
+			
+		}
 		
 		onBrickHit(e.brick,brickScore)
 		
