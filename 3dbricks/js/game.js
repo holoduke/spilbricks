@@ -1,6 +1,6 @@
 var game = (function(){
 	
-	var maxLifes = 0;
+	var maxLifes = 3;
 	var level = 1;
 	var lifes = maxLifes;
 	var score = 0;
@@ -21,18 +21,18 @@ var game = (function(){
 	event.sub("game.ball.dies",function(ball){
 		
 		if (game.getBallCount() == 1 && !lifes){
-			console.log('go reset')
+			
+			level = 1;
+			score = 0;
+			hud.drawGameStatistics(score,level);
+			game.setLevel(level);
+			
 			game.reset(function(){
-				
-				console.log('resetted')
-				level = 1;
-				score = 0;
-				hud.drawGameStatistics(score,level);
-				
+							
 				game.togglePause(function(){
-					console.log('go pause')
+				
 					setTimeout(function(){
-						console.log('go unpause')
+				
 						game.togglePause();
 					},1000)
 				});
@@ -74,9 +74,7 @@ var game = (function(){
 			})
 		}
 		else if (e.brick.userData.type=="bigBall"){
-			//console.log('create big ball')
-			//window.pop = e.ball.userData.guiref;
-			
+
 			e.ball.userData.guiref.scale.x= 1;
 			e.ball.userData.guiref.scale.y= 1; 
 			e.ball.userData.guiref.scale.z= 1;
@@ -91,13 +89,9 @@ var game = (function(){
 			game.setLevel(level);
 			
 			game.reset(function(){
-				console.log('r')
 				game.togglePause(function(){
-					console.log('p')
 					setTimeout(function(){
-						
 						hud.drawGameStatistics(score,level);
-						console.log('unp')
 						game.togglePause();
 					},1000)
 				});

@@ -34,14 +34,16 @@ function BrickGame() {
 	b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef, 
 	b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef;
 	
-	//helper function to ensure stop/start/pause/reset happens at the right time in animate loop
-	var runBefore = null;
-	var runAfter = null;
-	
+	/**
+	 * initializes render /physics engine. sets up the camera
+	 */
 	this.init = function(){
 		setupWorld();
 	}
 	
+	/**
+	 * starts the game by creating required objects and start of animation loop
+	 */
 	this.start = function(){
 		stopped = false;
 		paused = false;
@@ -55,15 +57,10 @@ function BrickGame() {
 		
 		event.pub("game.start");
 	}
-	
-	this.stop = function(){
-		runAfter = function(){
-			runAfter = null
-			that.start();
-			return false;
-		}	
-	}
-	
+		
+	/**
+	 * resets the game. bricks will be restored, ball placed to original start position
+	 */
 	this.reset = function(cb){
 		
 		var that = this;
@@ -80,10 +77,31 @@ function BrickGame() {
 		});
 	}
 	
+	/**
+	 * toggle pause game. 
+	 */
+	this.togglePause = function(cb){
+		
+		var that = this;
+		this.addPreRenderCb(function(){
+			paused = !paused;
+			if (paused){
+				if(cb) cb();
+			}
+			else{
+				that.addPostRenderCb(function(){
+					if (cb)cb();
+				});
+			}
+		});
+	} 
+	
+	/**
+	 * resets ball to start position
+	 */
 	this.resetBall = function(cb){
 		var that = this;
 		this.addPreRenderCb(function(){
-			runBefore = null
 			
 			var ballBody = balls[0].body;
 			ballBody.SetLinearVelocity(new Box2D.Common.Math.b2Vec2(0,0));
@@ -96,34 +114,13 @@ function BrickGame() {
 			
 			ballBody.ApplyImpulse(direction, ballBody.GetWorldCenter());
 			
-			
 			that.addPostRenderCb(function(){
-				runAfter = null
 				if (cb) cb();
-				return true;
 			});
 			
 			return true;
 		});
 	}
-
-	this.togglePause = function(cb){
-		
-		var that = this;
-		console.log('tiggle pause')
-		this.addPreRenderCb(function(){
-			console.log('ttogle pause')
-			paused = !paused;
-			if (paused){
-				if(cb) cb();
-			}
-			else{
-				that.addPostRenderCb(function(){
-					if (cb)cb();
-				});
-			}
-		});
-	} 
 	
 	this.createBonusBall = function(x,y){
 		var ball = createBall(x,y)
@@ -509,9 +506,7 @@ function BrickGame() {
 	
 	var animating = false;
 	function animate() {
-		if (runBefore){
-			if (!runBefore()) {return;};
-		}
+
 		animating = true;
 		executePrerenderCb();
 		
@@ -566,10 +561,6 @@ function BrickGame() {
 		
 		//render 3d scene
 		renderer.render(scene, camera);
-
-		if (runAfter){
-			if (!runAfter()) {return};
-		}
 		
 		executePostrenderCb();
 		
