@@ -1,6 +1,6 @@
 var game = (function(){
 	
-	var maxLifes = 3;
+	var maxLifes = 0;
 	var level = 1;
 	var lifes = maxLifes;
 	var score = 0;
@@ -21,13 +21,18 @@ var game = (function(){
 	event.sub("game.ball.dies",function(ball){
 		
 		if (game.getBallCount() == 1 && !lifes){
+			console.log('go reset')
 			game.reset(function(){
+				
+				console.log('resetted')
 				level = 1;
 				score = 0;
 				hud.drawGameStatistics(score,level);
 				
 				game.togglePause(function(){
+					console.log('go pause')
 					setTimeout(function(){
+						console.log('go unpause')
 						game.togglePause();
 					},1000)
 				});
@@ -82,11 +87,17 @@ var game = (function(){
 		
 		if (!e.bricksLeft){
 			
+			level++;
+			game.setLevel(level);
+			
 			game.reset(function(){
+				console.log('r')
 				game.togglePause(function(){
+					console.log('p')
 					setTimeout(function(){
-						level++;
+						
 						hud.drawGameStatistics(score,level);
+						console.log('unp')
 						game.togglePause();
 					},1000)
 				});
@@ -145,6 +156,7 @@ var game = (function(){
 		parent.receiveShadow = false;
 		//parent.position.y = 100;
 
+		if (!gameScene) return;
 		gameScene.add( parent );
         
 		parent.add( textMesh1 );
@@ -161,6 +173,8 @@ var game = (function(){
 			
 			var opacityStep = 0.02
 			var scaleStep = 0.02;
+			 
+			brick.userData.guiref.material.color.setHex(0xffffff);
 			
 			function animate(){
 				
@@ -171,7 +185,6 @@ var game = (function(){
 					mesh.scale.x += scaleStep;
 					mesh.scale.y += scaleStep; 
 					
-					brick.userData.guiref.material.color.setHex(0xffffff);
 					brick.userData.guiref.material.opacity -= opacityStep*1.7;
 					
 					game.addPostRenderCb(function(){
@@ -197,6 +210,7 @@ var game = (function(){
 
 	var hud = new Hud();
 	
+	game.setLevel(level);
 	game.init();
 	game.start();
 	

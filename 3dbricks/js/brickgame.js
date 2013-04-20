@@ -5,6 +5,7 @@ function BrickGame() {
 		y : 600
 	};
 	
+	var level;
 	var camera, scene, renderer;
 	var geometry, material, mesh;
 	var syncedObjects = [];
@@ -47,7 +48,10 @@ function BrickGame() {
 		
 		setupObjects();
 		setupLighting();
-		animate();
+		
+		if (!animating){
+			animate();
+		}
 		
 		event.pub("game.start");
 	}
@@ -60,41 +64,25 @@ function BrickGame() {
 		}	
 	}
 	
-	window.aap = balls;
-	
 	this.reset = function(cb){
 		
-		var that =this;
-	
-		runBefore = function(){
+		var that = this;
+		this.addPreRenderCb(function(){
 			
-			that.addPreRenderCb(function(){
-						
-				if (balls.length >= 0){
-					for (var i=balls.length-1; i >= 0; i--){
-						that.destroyBall(balls[i]);
-					}
+			if (balls.length >= 0){
+				for (var i=balls.length-1; i >= 0; i--){
+					that.destroyBall(balls[i]);
 				}
-			})
-				
-			runBefore = null;
-			paused = true;
+			}
 			cleanup();
-				
-			runAfter = function(){
-				runAfter = null
-				that.start();
-				if (cb) cb();
-				return false;
-			}	
-			
-			return true;
-		}
+			if (cb) cb();
+			that.start();
+		});
 	}
 	
 	this.resetBall = function(cb){
-		
-		runBefore = function(){
+		var that = this;
+		this.addPreRenderCb(function(){
 			runBefore = null
 			
 			var ballBody = balls[0].body;
@@ -109,15 +97,33 @@ function BrickGame() {
 			ballBody.ApplyImpulse(direction, ballBody.GetWorldCenter());
 			
 			
-			runAfter = function(){
+			that.addPostRenderCb(function(){
 				runAfter = null
 				if (cb) cb();
 				return true;
-			}	
+			});
 			
 			return true;
-		}
+		});
 	}
+
+	this.togglePause = function(cb){
+		
+		var that = this;
+		console.log('tiggle pause')
+		this.addPreRenderCb(function(){
+			console.log('ttogle pause')
+			paused = !paused;
+			if (paused){
+				if(cb) cb();
+			}
+			else{
+				that.addPostRenderCb(function(){
+					if (cb)cb();
+				});
+			}
+		});
+	} 
 	
 	this.createBonusBall = function(x,y){
 		var ball = createBall(x,y)
@@ -139,26 +145,11 @@ function BrickGame() {
 		destroySchedule.push(brick);
 	}
 	
-	this.togglePause = function(cb){
+	this.setLevel = function(lvl){
 		
-		runBefore = function(){
-			runBefore = null;
-			paused = !paused;
-			if (paused){
-				if(cb) cb();
-			}
-			else{
-				runAfter = function(){
-					runAfter = null;
-					if (cb)cb();
-					return true;
-				};
-			}
-			
-			return true;
-		}
-	} 
-	
+		level = lvl;
+	}
+
 	this.getScene = function(){
 		return scene;
 	}
@@ -173,7 +164,7 @@ function BrickGame() {
 		scene.fog = new THREE.Fog( 0x59472b, 0.1, 20 );
 
 		//create box2d physics world
-		var world = new b2World(new b2Vec2(0, -1) // gravity
+		var world = new b2World(new b2Vec2(0, -2) // gravity
 		, true // allow sleep
 		);
 
@@ -282,38 +273,42 @@ function BrickGame() {
 		ballBody.ApplyImpulse(direction, ballBody.GetWorldCenter())
 		syncedObjects.push(ball);
 		
-		//create bricks
-		new Brick(scene,scene.box2dworld).create(-3, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-2, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-1, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(0, 0, 0.49, 0.25,11808294.026639538,"bigBall" );
-		new Brick(scene,scene.box2dworld).create(1, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(2, 0, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(3, 0, 0.49, 0.25,11808294.026639538 );
+		var brickLoc = null;
+		var x = null;
+		var y = null;
+		var count = 0;
 
-		new Brick(scene,scene.box2dworld).create(-2.5, 0.6, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-1.5, 0.6, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-0.5, 0.6, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(0.5, 0.6, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(1.5, 0.6, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(2.5, 0.6, 0.49, 0.25,11808294.026639538 );
-
-		new Brick(scene,scene.box2dworld).create(-2.0, 1.2, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-1.0, 1.2, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-0.0, 1.2, 0.49, 0.25,6356160.3086433,"extraBalls");		
-		new Brick(scene,scene.box2dworld).create(1.0, 1.2, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(2.0, 1.2, 0.49, 0.25,11808294.026639538 );
-
-		new Brick(scene,scene.box2dworld).create(-1.5, 1.8, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-0.5, 1.8, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(0.5, 1.8, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(1.5, 1.8, 0.49, 0.25,11808294.026639538 );
-
-		new Brick(scene,scene.box2dworld).create(-1.0, 2.4, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(-0.0, 2.4, 0.49, 0.25,11808294.026639538 );
-		new Brick(scene,scene.box2dworld).create(1.0, 2.4, 0.49, 0.25,11808294.026639538 );
+		var lvl = levels.getLevel(level);
 		
-		brickCount = 25;	
+		for (var i=0,len=lvl.layout.length;i < len;i++){
+				
+			x = lvl.firstBrickPosition.x
+			
+			console.log('x',x)
+			
+			for (var j=0,jlen=lvl.layout[i].length; j < jlen; j++){
+		
+				if (lvl.layout[i][j] != 0){
+				
+				if (y === null){
+					y = lvl.firstBrickPosition.y
+				}
+				new Brick(scene,scene.box2dworld).create(x, y, 
+														lvl.brickSize.x, 
+														lvl.brickSize.y,
+														lvl.types[lvl.layout[i][j]].color,
+														lvl.types[lvl.layout[i][j]].type);
+				count++;
+				
+				}
+				x+=lvl.brickSpace.x;		
+			}
+			
+			y-=lvl.brickSpace.y;			
+		}
+		
+		brickCount = count;	
+		
 		//create square bounderies
 		var groundBodyDef = new b2BodyDef;
 		groundBodyDef.type = b2Body.b2_staticBody;
@@ -430,11 +425,11 @@ function BrickGame() {
 			if (ball){
 				var lv = ball.GetLinearVelocity();
 				
-				if (lv.y < 1.5 && lv.y >= 0){
-					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y+3))
+				if (lv.y < 2.5 && lv.y >= 0){
+					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y+6))
 				}
-				else if (lv.y > -1.5 && lv.y <= 0){
-					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y-3))
+				else if (lv.y > -2.5 && lv.y <= 0){
+					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y-6))
 				}
 			}
 			
@@ -482,27 +477,42 @@ function BrickGame() {
 	
 	function executePrerenderCb(){
 		for (var i=0,len=addPreRenderCb.length;i<len;i++){
+			addPreRenderCb[i].dirty = true;
 			addPreRenderCb[i]();
 		}
 		
-		addPreRenderCb = [];
+		//remove executed callback.
+		//we dont remove inside loop to prevent situations that a callback created
+		//another callback and interfers with array size. TODO this could be smarter?/
+		for (var i=addPreRenderCb.length-1;i >=0;i--){
+			
+			if (addPreRenderCb[i].dirty){
+				addPreRenderCb.splice(i,1);
+			}
+		}
 	}
 	
 	function executePostrenderCb(){
 		for (var i=0,len=addPostRenderCb.length;i<len;i++){
+			addPostRenderCb[i].dirty = true;
 			addPostRenderCb[i]();
 		}
 		
-		addPostRenderCb = [];
+		for (var i=addPostRenderCb.length-1;i >=0;i--){
+			
+			if (addPostRenderCb[i].dirty){
+				addPostRenderCb.splice(i,1);
+			}
+		}
 	}
 
 	
-	
+	var animating = false;
 	function animate() {
 		if (runBefore){
 			if (!runBefore()) {return;};
 		}
-		
+		animating = true;
 		executePrerenderCb();
 		
 		camera.position.z = window.z || 4;
@@ -513,23 +523,23 @@ function BrickGame() {
 		destroyScheduledBricks();
 
 		if (!paused){
-		//update paddle controls
-		paddle.updateControls();
-		paddlePosX = paddle.body.GetPosition().x
-		paddlePosY = paddle.body.GetPosition().y
-		
-		
-		//update gui with physics objects
-		for (var i=0; i <syncedObjects.length;i++){
-			syncedObjects[i].sync();
+			//update paddle controls
+			paddle.updateControls();
+			paddlePosX = paddle.body.GetPosition().x
+			paddlePosY = paddle.body.GetPosition().y
 			
-			//generic method. used for detecting game events
-			syncedObjects[i].validate();
-		}
-		
-		//step physics
-		scene.box2dworld.Step(1 / 60, 10, 10);
-		scene.box2dworld.ClearForces();
+			
+			//update gui with physics objects
+			for (var i=0; i <syncedObjects.length;i++){
+				syncedObjects[i].sync();
+				
+				//generic method. used for detecting game events
+				syncedObjects[i].validate();
+			}
+			
+			//step physics
+			scene.box2dworld.Step(1 / 60, 10, 10);
+			scene.box2dworld.ClearForces();
 		}
 		
 		//make sure camera looks to paddle

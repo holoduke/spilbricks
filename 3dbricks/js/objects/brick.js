@@ -23,6 +23,7 @@ function Brick(scene,world){
 		mesh.position.y = y
 		mesh.receiveShadow = false;
 		mesh.castShadow = true;
+		mesh.matrixAutoUpdate = true;
 		scene.add(mesh);
 		
 		return mesh;
