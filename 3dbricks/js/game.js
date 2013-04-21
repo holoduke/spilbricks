@@ -11,11 +11,10 @@ var game = (function(){
 			y : 600
 		};
 	var game = new BrickGame()
-	window.games = game;
-	
+
 	event.sub("game.start",function(){
 		
-		hud.drawGameStatistics(score,level);
+		hud.drawGameStatistics(score,level,lifes);
 	});
 		
 	event.sub("game.ball.dies",function(ball){
@@ -24,19 +23,15 @@ var game = (function(){
 			
 			level = 1;
 			score = 0;
-			hud.drawGameStatistics(score,level);
+			hud.drawGameStatistics(score,level,lifes);
 			game.setLevel(level);
 			
 			game.reset(function(){
 							
-				game.togglePause(function(){
-				
-					setTimeout(function(){
-				
-						game.togglePause();
-					},1000)
+				animateBricksFadeIn(function(){
+					game.togglePause();
 				});
-			});
+			},true);
 			lifes = maxLifes
 			
 			return;
@@ -44,7 +39,7 @@ var game = (function(){
 		else if (game.getBallCount() == 1){
 		
 			lifes--;
-			
+			hud.drawGameStatistics(score,level,lifes);
 			game.resetBall(function(){
 				game.togglePause(function(){
 					setTimeout(function(){
@@ -64,7 +59,7 @@ var game = (function(){
 		
 		var brickScore = 100 * bonusMultiplier;
 		score += brickScore;
-		hud.drawGameStatistics(score,level);
+		hud.drawGameStatistics(score,level,lifes);
 		bonusMultiplier+=1;
 		
 		if (e.brick.userData.type == 'extraBalls'){
@@ -81,7 +76,7 @@ var game = (function(){
 			
 		}
 		
-		onBrickHit(e.brick,brickScore)
+		animateBrickHit(e.brick,brickScore)
 		
 		if (!e.bricksLeft){
 			
@@ -89,15 +84,26 @@ var game = (function(){
 			game.setLevel(level);
 			
 			game.reset(function(){
-				game.togglePause(function(){
-					setTimeout(function(){
-						hud.drawGameStatistics(score,level);
+				//game.togglePause(function(){
+					animateBricksFadeIn(function(){
+						hud.drawGameStatistics(score,level,lifes);
 						game.togglePause();
-					},1000)
-				});
-			});			
+					});
+				//});
+			},true);			
 		}
 	});
+	
+	window.test = function(){
+		game.reset(function(){
+			game.togglePause(function(){
+				animateBricksFadeIn(function(){
+					hud.drawGameStatistics(score,level,lifes);
+					game.togglePause();
+				});
+			},true);
+		});	
+	}
 	
 	event.sub("game.paddleHit",function(){
 		
@@ -106,10 +112,9 @@ var game = (function(){
 	
 	
 	/**
-	 * callback when brick got hit
-	 * we add a score indicator to the brick
+	 * shows score above brick. bricks slowly fades away and will be removed from scene
 	 */
-	var onBrickHit = function(brick,brickScore){
+	var animateBrickHit = function(brick,brickScore){
 		
 	  	var size = 0.3;
         var height = 0.05;
@@ -200,13 +205,73 @@ var game = (function(){
 		})(textMesh1,parent,brick);
 	}
 	
+	//animation to fade in bricks like falling blocks
+	var animateBricksFadeIn = function(cb){
+		
+		var bricks = game.getBricks();
+		var startHeight = 4;
+		var step = 0.2;
+		var diffStep = 1;
+
+		for (var i=0,len=bricks.length;i<len;i++){
+			
+			bricks[i].userData.guiref.position.z = 4+diffStep;
+			bricks[i].userData.guiref.material.opacity = 0;
+			diffStep+=0.7
+		}
+		
+		function animate(){
+			
+			game.addPreRenderCb(function(){
+				
+				var allReady = true;
+				
+				for (var i=0,len=bricks.length;i<len;i++){
+			
+					bricks[i].userData.guiref.material.opacity = 1;
+					bricks[i].userData.guiref.position.z -= step;					
+					if (bricks[i].userData.guiref.position.z < 0){
+						bricks[i].userData.guiref.position.z = 0;
+					}
+					else{
+						allReady = false;
+					}
+				}
+				
+				game.addPostRenderCb(function(){
+				
+					if (allReady){
+						cb()
+					}
+					else{
+						animate();
+					}			
+				});
+			})
+		}
+		
+		animate();		
+		
+	}
+	
 	
 
 	var hud = new Hud();
 	
 	game.setLevel(level);
 	game.init();
+	
+	
+	
 	game.start();
+	game.togglePause(function(){
+		
+		animateBricksFadeIn(function(){
+			hud.drawGameStatistics(score,level,lifes);
+			game.togglePause();
+		});
+	});
+	
 	
 	var gameScene = game.getScene();	
 	return;

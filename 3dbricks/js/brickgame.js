@@ -14,6 +14,7 @@ function BrickGame() {
 	//reference to the paddle
 	var paddle;
 	var balls = [];
+	var bricks = [];
 	var paddlePosX = 0;
 	var paddlePosY = -4;
 	var brickCount = 0;
@@ -45,8 +46,6 @@ function BrickGame() {
 	 * starts the game by creating required objects and start of animation loop
 	 */
 	this.start = function(){
-		stopped = false;
-		paused = false;
 		
 		setupObjects();
 		setupLighting();
@@ -61,7 +60,8 @@ function BrickGame() {
 	/**
 	 * resets the game. bricks will be restored, ball placed to original start position
 	 */
-	this.reset = function(cb){
+	this.reset = function(cb,pause){
+				
 		this.addPreRenderCb(function(){
 			
 			if (balls.length >= 0){
@@ -69,9 +69,10 @@ function BrickGame() {
 					that.destroyBall(balls[i]);
 				}
 			}
+			if (pause) paused = true;
 			cleanup();
-			if (cb) cb();
 			that.start();
+			if (cb) cb();
 		});
 	}
 	
@@ -137,6 +138,10 @@ function BrickGame() {
 	
 	this.destroyBrick = function(brick){
 		destroySchedule.push(brick);
+	}
+	
+	this.getBricks = function(){
+		return bricks;
 	}
 	
 	this.setLevel = function(lvl){
@@ -276,11 +281,12 @@ function BrickGame() {
 
 		var lvl = levels.getLevel(level);
 		
+		//TODO make bricks array dynamic adjustable
+		bricks = [];
+		
 		for (var i=0,len=lvl.layout.length;i < len;i++){
 				
 			x = lvl.firstBrickPosition.x
-			
-			console.log('x',x)
 			
 			for (var j=0,jlen=lvl.layout[i].length; j < jlen; j++){
 		
@@ -289,11 +295,13 @@ function BrickGame() {
 				if (y === null){
 					y = lvl.firstBrickPosition.y
 				}
-				new Brick(scene,scene.box2dworld).create(x, y, 
-														lvl.brickSize.x, 
-														lvl.brickSize.y,
-														lvl.types[lvl.layout[i][j]].color,
-														lvl.types[lvl.layout[i][j]].type);
+				var brick = new Brick(scene,scene.box2dworld);
+				
+				bricks.push(brick.create(x, y, 
+							lvl.brickSize.x, 
+							lvl.brickSize.y,
+							lvl.types[lvl.layout[i][j]].color,
+							lvl.types[lvl.layout[i][j]].type));
 				count++;
 				
 				}
@@ -526,21 +534,22 @@ function BrickGame() {
 
 		//remove bricks beeing hit
 		destroyScheduledBricks();
-
+			
+			
+		//update gui with physics objects
+		for (var i=0; i <syncedObjects.length;i++){
+			syncedObjects[i].sync();
+			
+			//generic method. used for detecting game events
+			syncedObjects[i].validate();
+		}
+			
 		if (!paused){
+			
 			//update paddle controls
 			paddle.updateControls();
 			paddlePosX = paddle.body.GetPosition().x
 			paddlePosY = paddle.body.GetPosition().y
-			
-			
-			//update gui with physics objects
-			for (var i=0; i <syncedObjects.length;i++){
-				syncedObjects[i].sync();
-				
-				//generic method. used for detecting game events
-				syncedObjects[i].validate();
-			}
 			
 			//step physics
 			scene.box2dworld.Step(1 / 60, 10, 10);

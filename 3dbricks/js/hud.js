@@ -29,7 +29,7 @@ function Hud(){
  		
 // 		ctx.fillStyle = "#333333";
 //		ctx.fillRect(0, 0, 1000, 40);
- 		
+ 		 		
  		ctx.fillStyle = "#ffffff";
 		ctx.fillRect(0, 560, 1000, 40,0.5);
  		
@@ -37,6 +37,20 @@ function Hud(){
 		ctx.font = "normal 24pt sans-serif"
 		ctx.fillText("score "+ score,20,588);
 		ctx.fillText("level "+ level,880,588)
+		
+		var xstart = 20;
+		for (var i=0; i < lives;i++){
+			ctx.beginPath();
+			ctx.arc(xstart, 20, 12, 0, 2 * Math.PI, false);
+			ctx.fillStyle = '#777777';
+			ctx.fill();
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = '#222222';
+			ctx.stroke();
+			
+			xstart+=28;
+		}
+		
  	}
 	
 	this.render = function(){
