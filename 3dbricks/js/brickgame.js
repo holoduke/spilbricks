@@ -10,7 +10,7 @@ function BrickGame() {
 	var geometry, material, mesh;
 	var syncedObjects = [];
 	var paused = false;
-	var stopped = false;
+
 	//reference to the paddle
 	var paddle;
 	var balls = [];
@@ -62,8 +62,6 @@ function BrickGame() {
 	 * resets the game. bricks will be restored, ball placed to original start position
 	 */
 	this.reset = function(cb){
-		
-		var that = this;
 		this.addPreRenderCb(function(){
 			
 			if (balls.length >= 0){
@@ -82,7 +80,6 @@ function BrickGame() {
 	 */
 	this.togglePause = function(cb){
 		
-		var that = this;
 		this.addPreRenderCb(function(){
 			paused = !paused;
 			if (paused){
@@ -100,7 +97,7 @@ function BrickGame() {
 	 * resets ball to start position
 	 */
 	this.resetBall = function(cb){
-		var that = this;
+
 		this.addPreRenderCb(function(){
 			
 			var ballBody = balls[0].body;
@@ -215,9 +212,11 @@ function BrickGame() {
 //
 		pointLight = new THREE.PointLight(0xffaa00);
 		scene.add(pointLight);
+		pointLight.position.x = 1;
+		pointLight.position.y = -3;
 		pointLight.position.z = 3;
-		pointLight.position.y = -1;
-
+//scene.add(pointLight);
+		
 //		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
 //			color : 0xffaa00
 //		}));
@@ -311,6 +310,7 @@ function BrickGame() {
 		groundBodyDef.type = b2Body.b2_staticBody;
 		groundBodyDef.position.Set(0, 0);
 		var _groundBody = scene.box2dworld.CreateBody(groundBodyDef);
+		_groundBody.userData = {'name':'wall'};
 
 		var groundBox = new b2PolygonShape();
 		var groundBoxDef = new b2FixtureDef;
@@ -318,16 +318,20 @@ function BrickGame() {
 
 		groundBox.SetAsEdge(new b2Vec2(5, 5), new b2Vec2(-5, 5));
 		var bottomFixture = _groundBody.CreateFixture(groundBoxDef);
-
+		bottomFixture.userData = "top";
+		
 		groundBox.SetAsEdge(new b2Vec2(-5, 5), new b2Vec2(-5, -5));
-		_groundBody.CreateFixture(groundBoxDef);
-
+		var left = _groundBody.CreateFixture(groundBoxDef);
+		left.userData = "left";
+		
 		groundBox.SetAsEdge(new b2Vec2(-5, -5), new b2Vec2(5, -5));
-		_groundBody.CreateFixture(groundBoxDef);
-
+		var top = _groundBody.CreateFixture(groundBoxDef);
+		
 		groundBox.SetAsEdge(new b2Vec2(5, -5), new b2Vec2(5, 5));
-		_groundBody.CreateFixture(groundBoxDef);
-	
+		var right = _groundBody.CreateFixture(groundBoxDef);
+		right.userData = "right";
+		
+		
 		///create joint to keep paddle fixed to x axis
 		var worldAxis = new b2Vec2(1.0, 0.0);
 
@@ -377,36 +381,35 @@ function BrickGame() {
 		syncedObjects = [];
 	}
 
+	var fa;
+	var fb;
+	var bA;
+	var bB;
+	var contactBallBody;
+	var contactBrick;
 	/**
 	 * called by box2d when colition occurs
 	 */
 	function beginContactListener(contact, manifold) {
 		// do some stuff
-		var fa = contact.GetFixtureA();
-		var fb = contact.GetFixtureB();
+		fa = contact.GetFixtureA();
+		fb = contact.GetFixtureB();
 
-		var bA = fa.GetBody();
-		var bB = fb.GetBody();
+		bA = fa.GetBody();
+		bB = fb.GetBody();
 
-		var ballbody = null;
-		var brick = null;
-
-		if (bA.userData && bA.userData.name == 'ball') {
-			ballbody = bA;
-
-			if (bB.userData && bB.userData.name == 'brick') {
-				brick = bB;
-			}
+		if (bA.userData && bA.userData.name == 'ball' &&
+			bB.userData && bB.userData.name == 'brick') {
+			
+			contactBallBody = bA;
+			brick = bB;
 		}
-		if (bB.userData && bB.userData.name == 'ball') {
-			ballbody = bB;
-
-			if (bA.userData && bA.userData.name == 'brick') {
-				brick = bA;
-			}
-		}
-		
-		if (bA.userData && bA.userData.name == 'paddle' || bB.userData && bB.userData.name == 'paddle') {
+		else if (bB.userData && bB.userData.name == 'ball' &&
+				 bA.userData && bA.userData.name == 'brick') {
+			contactBallBody = bB;
+			brick = bA;
+		}		
+		else if (bA.userData && bA.userData.name == 'paddle' || bB.userData && bB.userData.name == 'paddle') {
 			
 			var ball = null;
 			if (bA.userData && bA.userData.name == 'ball'){
@@ -416,17 +419,24 @@ function BrickGame() {
 				ball = bB;
 			}
 			
-			//this piece of ugly logic makes sure that the ball always
-			//bouches back with a high enough y velocity when it hits the paddle
-			//otherwise it could be possible that the return angle of the ball is too wide
+			//bounce ratio between y and x should not be lower than 1
+			//in other words, the minimum angle should be 45 degrees
 			if (ball){
 				var lv = ball.GetLinearVelocity();
 				
-				if (lv.y < 2.5 && lv.y >= 0){
-					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y+6))
-				}
-				else if (lv.y > -2.5 && lv.y <= 0){
-					ball.SetLinearVelocity(new b2Vec2(lv.x,lv.y-6))
+				var xv = Math.abs(lv.x)
+				var yv = Math.abs(lv.y)
+				var newY = 1;
+			
+				if (yv/xv < 1){
+					newY = xv;
+					
+					if (lv.y >= 0){
+						ball.SetLinearVelocity(new b2Vec2(lv.x,newY))
+					}
+					else if (lv.y <= 0){
+						ball.SetLinearVelocity(new b2Vec2(lv.x,-newY))
+					}
 				}
 			}
 			
@@ -434,16 +444,16 @@ function BrickGame() {
 		}
 
 		// if we have ball brick colition we schedule the brick to be removed in next animate
-		else if (ballbody && brick && !brick.destroyed) {
+		if (contactBallBody && brick && !brick.destroyed) {
 			brick.destroyed = true;
 			
 			
 			brickCount--
-			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick,'ball':ballbody});
+			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick,'ball':contactBallBody});
 			
 			//var m = manifold.getWorldManifold();
-			//var f:V2 = V2.multiplyN(m.normal, ballbody.GetMass() * 170);
-			//bumpSchedule(ballbody); 
+			//var f:V2 = V2.multiplyN(m.normal, contactBallBody.GetMass() * 170);
+			//bumpSchedule(contactBallBody); 
 		}
 	}
 	
