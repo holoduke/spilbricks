@@ -148,6 +148,127 @@ function BrickGame() {
 		
 		level = lvl;
 	}
+	
+
+	var tweenSchedule = [];
+	
+	
+	/**
+	 * schedules camera tweens.
+	 * 
+	 * use tween types for various movement algorithms
+	 * 
+	 * examples
+	 * 
+	 * move camera to
+	 * game.tweenCamera("easeinout",{yTarget:-7,zTarget:6});
+	 * 
+	 * move camera with
+	 * gamee.tweenCamera("easeinout",{y:-7,z:6}, function(){//done});
+	 * 
+	 * move camera from to
+	 * gamee.tweenCamera("easeinout",{yStart:0,zStart:0,y=12,z=10}, function(){//done});
+	 * 
+	 */
+	this.tweenCamera = function(type,coords,cb){
+		tweenSchedule.push({'type':type,'coords':coords,'cb':cb});
+	}
+	
+	
+	/**
+	 * this method is called every draw iteration
+	 * used to tween camera movements.
+	 * to schedule a camera movement use .tweenCamera
+	 */
+	moveCameraSchedule = function(){
+		
+		if (tweenSchedule && tweenSchedule.length){
+		
+			var tween = tweenSchedule[0];
+			
+			// t: current time, b: begInnIng value, c: change In value, d: duration
+			function easeInQuad(t, b, c, d) {
+				return c*(t/=d)*t + b;
+			}
+			
+			function easeOutQuad(t, b, c, d) {
+				return -c *(t/=d)*(t-2) + b;
+			}
+			
+			function easeInOutQuad (t, b, c, d) {
+				if ((t/=d/2) < 1) return c/2*t*t + b;
+				return -c/2 * ((--t)*(t-2) - 1) + b;
+			}
+			
+		
+			if (!tween.coords.yit){
+				tween.coords.yit = 0;
+				
+				if (!tween.coords.yStart){
+					tween.coords.yStart = camera.position.y;
+				}
+				if (!tween.coords.zStart){
+					tween.coords.zStart = camera.position.z;
+				}
+				
+				if (tween.coords.yTarget){
+					tween.coords.y = tween.coords.yTarget - tween.coords.yStart;
+				}
+				if (tween.coords.zTarget){
+					tween.coords.z = tween.coords.zTarget - tween.coords.zStart;
+				}
+				
+			}
+			
+			var tweenFunc = null;
+			switch (tween.type){
+			case "easein":
+				tweenFunc = easeInQuad
+				break;
+			case "easeout":
+				tweenFunc = easeOutQuad
+				break;
+			case "easeinout":
+				tweenFunc = easeInOutQuad
+			}
+			
+			var rY = tweenFunc(tween.coords.yit,tween.coords.yStart,tween.coords.y,100);
+			var rZ = tweenFunc(tween.coords.yit,tween.coords.zStart,tween.coords.z,100);
+			
+			
+			if (!tween.coords.ydone){
+				
+				if ((tween.coords.y >= 0 && (tween.coords.yStart + tween.coords.y) <= rY) ||
+					tween.coords.y <= 0 && (tween.coords.yStart + tween.coords.y) >= rY){
+					camera.position.y = tween.coords.yStart + tween.coords.y;
+					tween.coords.ydone = true;
+				}else{
+					camera.position.y =  rY;
+				}
+			}
+			
+			if (!tween.coords.zdone){
+				
+				if ((tween.coords.z >= 0 && (tween.coords.zStart + tween.coords.z) <= rZ) ||
+					tween.coords.z <= 0 && (tween.coords.zStart + tween.coords.z) >= rZ){
+					camera.position.z = tween.coords.zStart + tween.coords.z;
+					tween.coords.zdone = true;
+				}else{
+					camera.position.z =  rZ;
+				}
+			}
+			
+			if (tween.coords.ydone && tween.coords.zdone){
+				
+				tweenSchedule.splice(0,1);
+				return tween.cb && tween.cb();
+			}
+			
+			tween.coords.yit++;
+			
+		}
+	}
+	
 
 	this.getScene = function(){
 		return scene;
@@ -157,7 +278,9 @@ function BrickGame() {
 
 		//setup camera
 		camera = new THREE.PerspectiveCamera(50, gameSize.x / gameSize.y, 1,10000);
-
+		camera.position.z = 1;
+		camera.position.y = -10;
+		
 		//create three world
 		scene = new THREE.Scene();
 		scene.fog = new THREE.Fog( 0x59472b, 0.1, 20 );
@@ -174,6 +297,7 @@ function BrickGame() {
 		//assign contact listener for all colitions
 		var contactListener = new Box2D.Dynamics.b2ContactListener;
 		contactListener.BeginContact = beginContactListener;
+		contactListener.PreSolve = preSolveContactListener;
 		
 		world.SetContactListener(contactListener);
 
@@ -250,6 +374,8 @@ function BrickGame() {
 		ball.create(x,y);
 		balls.push(ball);
 		syncedObjects.push(ball);
+		
+		event.pub('game.ball.created',ball);
 		
 		return ball;
 	}
@@ -367,7 +493,11 @@ function BrickGame() {
 		ground.castShadow = false;
 		ground.receiveShadow = true;
 
-		scene.add( ground );		
+		scene.add( ground );	
+		
+		
+		//camera.position.z = 5;
+		//camera.position.y = -4;
 	}
 
 	/**
@@ -465,6 +595,43 @@ function BrickGame() {
 		}
 	}
 	
+	/**
+	 * this method is called just before a collition
+	 * We can use this space to cancel collition responses.
+	 * Be aware that due ccd this method can be called multiple timer prior to the actual
+	 * collition
+	 */
+	var preSolveContactListener = function(contact, manifold) {
+		
+		return;
+		// do some stuff
+		fa = contact.GetFixtureA();
+		fb = contact.GetFixtureB();
+
+		bA = fa.GetBody();
+		bB = fb.GetBody();
+
+		contactBallBody = null;
+		brick = null;
+	
+		if (bA.userData && bA.userData.name == 'ball' &&
+			bB.userData && bB.userData.name == 'brick') {
+			
+			contactBallBody = bA;
+			brick = bB;
+		}
+		else if (bB.userData && bB.userData.name == 'ball' &&
+				 bA.userData && bA.userData.name == 'brick') {
+			contactBallBody = bB;
+			brick = bA;
+		}
+		
+		if (contactBallBody && brick){
+			//console.log(contact)
+			//contact.SetEnabled(false);
+		}
+	}
+	
 	var destroySchedule = [];
 	var bumpSchedule = [];
 	
@@ -528,9 +695,6 @@ function BrickGame() {
 		animating = true;
 		executePrerenderCb();
 		
-		camera.position.z = window.z || 4;
-		camera.position.y = window.y || -9
-		//camera.rotation.x = window.x || 5
 
 		//remove bricks beeing hit
 		destroyScheduledBricks();
@@ -555,28 +719,39 @@ function BrickGame() {
 			scene.box2dworld.Step(1 / 60, 10, 10);
 			scene.box2dworld.ClearForces();
 		}
+
 		
 		//make sure camera looks to paddle
 		camera.lookAt({
 			'x' : paddle.mesh.position.x,
-			'y' : paddle.mesh.position.y,
+			'y' : paddle.mesh.position.y+2,
 			'z' : paddle.mesh.position.z
 		});
 
 		camera.rotation.z = 0;
 
+		
+		moveCameraSchedule();
+		
+		camera.position.y = window.y || camera.position.y;
+		
+		
+		//camera.rotation.x = window.x || 5
+		
 		var diff = 0 - paddle.mesh.position.x;
-		camera.position.x = -diff / 2; 
-		
-		if (balls.length){
-			camera.position.z += balls[0].body.GetPosition().y / 20
-		}
-		
+		camera.position.x = paddle.mesh.position.x / 2; 
+//		
+//		if (balls.length){
+//			camera.position.z += balls[0].body.GetPosition().y / 20
+//		}
+//		
 		scene.box2dworld.SetGravity(new b2Vec2((diff / 6), -1));
+//		
+//		if (balls.length){
+//			camera.position.y += 2.5 - (balls[0].body.GetPosition().y / 20)
+//		}
 		
-		if (balls.length){
-			camera.position.y += 2.5 - (balls[0].body.GetPosition().y / 20)
-		}
+		//request
 		
 		//render 3d scene
 		renderer.render(scene, camera);

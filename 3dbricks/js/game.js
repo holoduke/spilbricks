@@ -16,6 +16,14 @@ var game = (function(){
 		
 		hud.drawGameStatistics(score,level,lifes);
 	});
+	
+	event.sub("game.ball.created",function(ball){
+	
+		if (game.getBallCount() == 2){
+			gamee.tweenCamera("easeinout",{yTarget:-7,zTarget:8});
+		}
+	});
+	
 		
 	event.sub("game.ball.dies",function(ball){
 		
@@ -51,6 +59,10 @@ var game = (function(){
 		else{
 			game.addPreRenderCb(function(){
 				game.destroyBall(ball);
+				
+				if (game.getBallCount() == 1){
+					gamee.tweenCamera("easeinout",{yTarget:-7,zTarget:6});					
+				}
 			});
 		}
 	});
@@ -83,9 +95,11 @@ var game = (function(){
 			level++;
 			game.setLevel(level);
 			
+			gamee.tweenCamera("easeinout",{yTarget:-7,zTarget:6});
+			
 			game.reset(function(){
 				//game.togglePause(function(){
-					animateBricksFadeIn(function(){
+					animateBricksFadeIn(function(){						
 						hud.drawGameStatistics(score,level,lifes);
 						game.togglePause();
 					});
@@ -93,18 +107,7 @@ var game = (function(){
 			},true);			
 		}
 	});
-	
-	window.test = function(){
-		game.reset(function(){
-			game.togglePause(function(){
-				animateBricksFadeIn(function(){
-					hud.drawGameStatistics(score,level,lifes);
-					game.togglePause();
-				});
-			},true);
-		});	
-	}
-	
+		
 	event.sub("game.paddleHit",function(){
 		
 		bonusMultiplier = 1;
@@ -266,6 +269,11 @@ var game = (function(){
 	game.start();
 	game.togglePause(function(){
 		
+
+		
+		gamee.tweenCamera("easeinout",{yTarget:-7,zTarget:6});
+		
+		
 		animateBricksFadeIn(function(){
 			hud.drawGameStatistics(score,level,lifes);
 			game.togglePause();
@@ -273,11 +281,13 @@ var game = (function(){
 	});
 	
 	
+	
 	var gameScene = game.getScene();	
+//	return;
+	
+	window.gamee = game;
 	return;
 	
-	window.gamee = this;
-		
 		        var angularSpeed = 1.2; // revolutions per second
 		        var lastTime = 0;
 		 

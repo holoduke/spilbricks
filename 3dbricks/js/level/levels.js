@@ -88,7 +88,31 @@ levels = (function(){
 					]
 			});
 	
-	
+	levels.push( ///level 3
+			{
+					type:"align",
+					gameSize : {x:5,y:5},
+					firstBrickPosition : {x:-3,y:2.4},
+					brickSize : {x:.49,y:.25,z:.25},
+					brickSpace : {x:1, y:0.52},
+					types : {1:{'color':11808294.026639538,'type':'normal'}, 
+						     2:{'color':6356160.3086433,'type':'extraBalls'},
+							 3:{'color':8157503.589997533,'type':'normal'},
+							 4:{'color':1274646.795992431,'type':'normal'},
+							 5:{'color':61838294.026639538,'type':'normal'}
+					},
+					
+					layout: 
+					[
+					[ 1, 0, 1, 0 ,1, 0, 1 ],
+					[ 1, 0, 1, 0 ,1, 0, 1 ],
+					[ 1, 0, 1, 0 ,1, 0, 1 ],
+					[ 2, 0, 2, 0 ,2, 0, 2 ],
+					[ 3, 0, 3, 0 ,3, 0, 3 ],
+					[ 4, 0, 4, 0 ,4, 0, 4 ], 
+					[ 5, 0, 5, 0 ,5, 0, 5 ],
+					]
+			});	
 	
 //	levels.push( ///level 3
 //			{

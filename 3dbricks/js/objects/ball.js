@@ -11,12 +11,12 @@ function Ball(scene,world){
 		var color = Math.random() * 0xffffff;
 		material = new THREE.MeshPhongMaterial({
 			color : color,
-			shininess : 50
+			shininess : 100
 		});
 
 		var ball = new THREE.Mesh(geometry, material);
 		ball.useQuaternion = true;
-		ball.receiveShadow = true;
+	//	ball.receiveShadow = true;
 		ball.castShadow = true;
 		
 		return ball;
