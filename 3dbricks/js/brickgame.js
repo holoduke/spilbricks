@@ -210,12 +210,18 @@ function BrickGame() {
 				if (!tween.coords.zStart){
 					tween.coords.zStart = camera.position.z;
 				}
+				if (!tween.coords.xStart){
+					tween.coords.xStart = camera.position.x;
+				}
 				
 				if (tween.coords.yTarget){
 					tween.coords.y = tween.coords.yTarget - tween.coords.yStart;
 				}
 				if (tween.coords.zTarget){
 					tween.coords.z = tween.coords.zTarget - tween.coords.zStart;
+				}
+				if (tween.coords.xTarget){
+					tween.coords.x = tween.coords.xTarget - tween.coords.xStart;
 				}
 				
 			}
@@ -234,7 +240,7 @@ function BrickGame() {
 			
 			var rY = tweenFunc(tween.coords.yit,tween.coords.yStart,tween.coords.y,100);
 			var rZ = tweenFunc(tween.coords.yit,tween.coords.zStart,tween.coords.z,100);
-			
+			var rX = tweenFunc(tween.coords.yit,tween.coords.xStart,tween.coords.x,100);
 			
 			if (!tween.coords.ydone){
 				
@@ -258,14 +264,25 @@ function BrickGame() {
 				}
 			}
 			
-			if (tween.coords.ydone && tween.coords.zdone){
+			if (!tween.coords.xdone){
+				
+				if ((tween.coords.x >= 0 && (tween.coords.xStart + tween.coords.x) <= rX) ||
+					tween.coords.x <= 0 && (tween.coords.xStart + tween.coords.x) >= rX){
+					camera.position.x = tween.coords.xStart + tween.coords.x;
+					tween.coords.xdone = true;
+				}else{
+					camera.position.x =  rX;
+				}
+			}
+			
+			if (tween.coords.ydone && tween.coords.zdone && tween.coords.zdone){
 				
 				tweenSchedule.splice(0,1);
 				return tween.cb && tween.cb();
 			}
 			
 			tween.coords.yit++;
-			
+			return true;
 		}
 	}
 	
@@ -729,22 +746,18 @@ function BrickGame() {
 		});
 
 		camera.rotation.z = 0;
-
 		
-		moveCameraSchedule();
+		if (!moveCameraSchedule()){
+			//camera.position.x = paddle.mesh.position.x / 2; 
+		}
 		
-		camera.position.y = window.y || camera.position.y;
-		
-		
-		//camera.rotation.x = window.x || 5
-		
-		var diff = 0 - paddle.mesh.position.x;
 		camera.position.x = paddle.mesh.position.x / 2; 
-//		
+		
 //		if (balls.length){
 //			camera.position.z += balls[0].body.GetPosition().y / 20
 //		}
 //		
+		var diff = 0 - paddle.mesh.position.x;
 		scene.box2dworld.SetGravity(new b2Vec2((diff / 6), -1));
 //		
 //		if (balls.length){
