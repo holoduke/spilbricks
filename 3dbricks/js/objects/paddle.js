@@ -9,7 +9,7 @@ function Paddle(scene,world){
 	
 	var getGeometry = function(x, y){
 		
-       var geometry = new THREE.CubeGeometry( 1, 0.2, 0.2 );
+       var geometry = new THREE.CubeGeometry( 1.4, 0.2, 0.2 );
 
         var material = new THREE.MeshPhongMaterial( 
         	{ color: 13947256.453834934 
@@ -38,20 +38,20 @@ function Paddle(scene,world){
 		fixDef.shape = bodyPoly;
 
 		var vertexArray = [];
-		vertexArray.push(new b2Vec2(-0.5, -0.1));
-		vertexArray.push(new b2Vec2(0.5, -0.1));
+		vertexArray.push(new b2Vec2(-0.7, -0.1));
+		vertexArray.push(new b2Vec2(0.7, -0.1));
 
-		vertexArray.push(new b2Vec2(0.5, 0));
-		vertexArray.push(new b2Vec2(0.434, 0.028));
-		vertexArray.push(new b2Vec2(0.352, 0.054));
-		vertexArray.push(new b2Vec2(0.216, 0.088));
+		vertexArray.push(new b2Vec2(0.7, 0));
+		vertexArray.push(new b2Vec2(0.634, 0.028));
+		vertexArray.push(new b2Vec2(0.552, 0.054));
+		vertexArray.push(new b2Vec2(0.416, 0.088));
 		vertexArray.push(new b2Vec2(0.062, 0.1));
 
 		vertexArray.push(new b2Vec2(-0.062, 0.1));
-		vertexArray.push(new b2Vec2(-0.216, 0.088));
-		vertexArray.push(new b2Vec2(-0.352, 0.054));
-		vertexArray.push(new b2Vec2(-0.434, 0.028));
-		vertexArray.push(new b2Vec2(-0.5, 0));
+		vertexArray.push(new b2Vec2(-0.416, 0.088));
+		vertexArray.push(new b2Vec2(-0.552, 0.054));
+		vertexArray.push(new b2Vec2(-0.634, 0.028));
+		vertexArray.push(new b2Vec2(-0.7, 0));
 
 		bodyPoly.SetAsArray(vertexArray, vertexArray.length);
 
@@ -102,9 +102,10 @@ function Paddle(scene,world){
 		return result;
 	}
 	
+	var dir;
 	this.updateControls = function(){
 		
-		var dir = getDir();
+		dir = getDir();
 		if (dir > 0) {
 			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(2.2,0),this.body.GetWorldCenter())
 			

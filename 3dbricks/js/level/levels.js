@@ -29,17 +29,23 @@ levels = (function(){
 			firstBrickPosition : {x:-3,y:2.4},
 			brickSize : {x:.49,y:.25,z:.25},
 			brickSpace : {x:1, y:0.52},
-			types : {1:{'color':11808294.026639538,'type':'normal'}, 2:{'color':6356160.3086433,'type':'extraBalls'}},
+			types : {1:{'color':11808294.026639538,'type':'normal'}, 
+					 2:{'color':6356160.3086433,'type':'extraBalls'},
+					 5:{'color':15346160.1086433,'type':'superspeed'},
+					 4:{'color':4274646.795992431,'type':'normal','hitCount':2,"onHitTransformTo":1},
+					 6:{'color':19346160.1086433,'type':'ghost'},
+			
+			},
 			layout: 
 			[
+			[ 1, 1, 1, 2 ,1, 1, 1 ],
 			[ 1, 1, 1, 1 ,1, 1, 1 ],
+			[ 1, 4, 1, 4 ,1, 4, 1 ],
 			[ 1, 1, 1, 1 ,1, 1, 1 ],
+			[ 0, 1, 1, 1 ,1, 1, 0 ],
+			[ 0, 0, 1, 1 ,1, 0, 0 ], 
 			[ 0, 0, 0, 0 ,0, 0, 0 ],
-			[ 1, 1, 2, 1 ,2, 1, 1 ],
-			[ 1, 1, 1, 1 ,1, 1, 1 ],
-			[ 1, 1, 1, 1 ,1, 1, 1 ], 
-			[ 0, 0, 0, 0 ,0, 0, 0 ],
-			]
+			] 
 	});
 	
 	levels.push( ///level 2
@@ -49,14 +55,17 @@ levels = (function(){
 			firstBrickPosition : {x:-3,y:2.4},
 			brickSize : {x:.49,y:.25,z:.25},
 			brickSpace : {x:1, y:0.52},
-			types : {1:{'color':11808294.026639538,'type':'normal'}, 2:{'color':6356160.3086433,'type':'extraBalls'}},
+			types : {1:{'color':11808294.026639538,'type':'normal'}, 
+					2:{'color':6356160.3086433,'type':'extraBalls'},
+					6:{'color':19346160.1086433,'type':'ghost'},
+					},
 			layout: 
 			[
-			[ 2, 2, 0, 0 ,0, 2, 2 ],
+			[ 1, 1, 0, 6 ,0, 1, 1 ],
 			[ 1, 1, 1, 1 ,1, 1, 1 ],
-			[ 2, 2, 0, 0 ,0, 2, 2 ],
+			[ 1, 1, 0, 0 ,0, 1, 1 ],
 			[ 1, 1, 1, 1 ,1, 1, 1 ],
-			[ 2, 2, 1, 1 ,1, 2, 2 ],
+			[ 1, 1, 1, 1 ,1, 1, 1 ],
 			[ 1, 1, 0, 0 ,0, 1, 1 ], 
 			[ 0, 0, 0, 0 ,0, 0, 0 ],
 			]
@@ -71,8 +80,8 @@ levels = (function(){
 					brickSpace : {x:1, y:0.52},
 					types : {1:{'color':11808294.026639538,'type':'normal'}, 
 						     2:{'color':6356160.3086433,'type':'extraBalls'},
-							 3:{'color':6157803.589997533,'type':'normal'},
-							 4:{'color':4274646.795992431,'type':'normal'},
+							 3:{'color':8485631.716873156,'type':'normal','hitCount':3,"onHitTransformTo":4},
+							 4:{'color':4274646.795992431,'type':'normal','hitCount':2,"onHitTransformTo":1},
 							 5:{'color':11808294.026639538,'type':'normal'}
 					},
 					
@@ -150,3 +159,5 @@ levels = (function(){
 	}
 		
 })()
+
+

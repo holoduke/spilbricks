@@ -4,11 +4,12 @@ function Ball(scene,world){
 	var world = world;
 	this.maxSpeed = 5;
 
-	var getGeometry = function(){
+	var getGeometry = function(color){
 		
 		var geometry = new THREE.SphereGeometry(0.2, 16, 8);
 		geometry.dynamic = true;
-		var color = Math.random() * 0xffffff;
+		var color = color || Math.random() * 0xffffff;
+		
 		material = new THREE.MeshPhongMaterial({
 			color : color,
 			shininess : 100
@@ -34,10 +35,10 @@ function Ball(scene,world){
 		return ballbody;		
 	}
 
-	this.create = function(x,y){
+	this.create = function(x,y,color){
 		
-		var ball = getGeometry();
-
+		var ball = getGeometry(color);
+		this.mesh = ball;
 		scene.add(ball);
 		
 		var body = getBody(x,y);

@@ -51,16 +51,17 @@ function Brick(scene,world){
 		return barbody
 	}
 	
-	this.create = function(x, y, xw, yw,color,type){
+	this.create = function(x, y, xw, yw,type){
 		
-		var brick = getGeometry(x, y, xw, yw,color);
+		var brick = getGeometry(x, y, xw, yw,type.color);
 		scene.add(brick);
 		
 		var body = getBody(x, y, xw, yw);
 		body.userData = {
 			'name' : 'brick',
 			'guiref' : brick,
-			'type' : type
+			'type' : type,
+			'hitCount' : type.hitCount || 1,
 		};
 				
 		return body;

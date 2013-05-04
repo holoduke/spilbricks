@@ -17,8 +17,9 @@ function BrickGame() {
 	var bricks = [];
 	var paddlePosX = 0;
 	var paddlePosY = -4;
-	var brickCount = 0;
+	var levelTargetPoints = 0;
 	var that = this;
+	var cameraLookAtMesh;
 	
 	b2Vec2 = Box2D.Common.Math.b2Vec2, 
 	b2AABB = Box2D.Collision.b2AABB, 
@@ -35,6 +36,8 @@ function BrickGame() {
 	b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef, 
 	b2PrismaticJointDef = Box2D.Dynamics.Joints.b2PrismaticJointDef;
 	
+	var cameraXFollowsPaddle = false;
+	var cameraAutoLookAt = true;
 	/**
 	 * initializes render /physics engine. sets up the camera
 	 */
@@ -121,7 +124,7 @@ function BrickGame() {
 	}
 	
 	this.createBonusBall = function(x,y){
-		var ball = createBall(x,y)
+		var ball = createBall(x,y,8485631.716873156)
 		ball.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2((Math.random() < 0.5 ? -1 : 1) * Math.random(),(Math.random() < 0.5 ? -1 : 1) * Math.random()), ball.body.GetWorldCenter())
 	}
 	
@@ -136,12 +139,36 @@ function BrickGame() {
 		return balls.length;
 	}
 	
+	this.getBalls = function(){
+		return balls;
+	}
+	
 	this.destroyBrick = function(brick){
 		destroySchedule.push(brick);
 	}
 	
 	this.getBricks = function(){
 		return bricks;
+	}
+	
+	this.getPaddle = function(){
+		return paddle;
+	}
+	
+	this.getCamera = function(){
+		return camera;
+	}
+	
+	this.setCameraLookAtMesh = function(mesh){
+		cameraLookAtMesh = mesh;
+	}
+	
+	this.cameraFollowsPaddle = function(bool){
+		cameraXFollowsPaddle = bool;
+	}
+	
+	this.setCameraAutoLookAt = function(bool){
+		cameraAutoLookAt = bool;
 	}
 	
 	this.setLevel = function(lvl){
@@ -151,8 +178,8 @@ function BrickGame() {
 	
 
 	var tweenSchedule = [];
-	
-	
+	var tweenLookAtSchedule = [];
+	var tweenLensSchedule = [];
 	/**
 	 * schedules camera tweens.
 	 * 
@@ -174,10 +201,24 @@ function BrickGame() {
 		tweenSchedule.push({'type':type,'coords':coords,'cb':cb});
 	}
 	
+	this.tweenLookAtCamera = function(type,coords,cb){
+		tweenLookAtSchedule.push({'type':type,'coords':coords,'cb':cb});
+	}
+	
+	this.tweenCameraLens = function(type,coords,cb){
+		tweenLensSchedule.push({'type':type,'coords':coords,'cb':cb});
+	}
+	
+	this.resetTweenCamera = function(){
+		tweenSchedule = [];
+		tweenLookAtSchedule = [];
+		tweenLensSchedule = [];
+	}
+	
 	
 	/**
 	 * this method is called every draw iteration
-	 * used to tween camera movements.
+	 * used to move camera with tween algorithm.
 	 * to schedule a camera movement use .tweenCamera
 	 */
 	moveCameraSchedule = function(){
@@ -186,103 +227,149 @@ function BrickGame() {
 		
 			var tween = tweenSchedule[0];
 			
-			// t: current time, b: begInnIng value, c: change In value, d: duration
-			function easeInQuad(t, b, c, d) {
-				return c*(t/=d)*t + b;
-			}
-			
-			function easeOutQuad(t, b, c, d) {
-				return -c *(t/=d)*(t-2) + b;
-			}
-			
-			function easeInOutQuad (t, b, c, d) {
-				if ((t/=d/2) < 1) return c/2*t*t + b;
-				return -c/2 * ((--t)*(t-2) - 1) + b;
-			}
-			
-		
 			if (!tween.coords.yit){
 				tween.coords.yit = 0;
 				
-				if (!tween.coords.yStart){
+				if (tween.coords.yStart == null){
 					tween.coords.yStart = camera.position.y;
 				}
-				if (!tween.coords.zStart){
+				if (tween.coords.zStart == null){
 					tween.coords.zStart = camera.position.z;
 				}
-				if (!tween.coords.xStart){
+				if (tween.coords.xStart == null){
 					tween.coords.xStart = camera.position.x;
 				}
 				
-				if (tween.coords.yTarget){
-					tween.coords.y = tween.coords.yTarget - tween.coords.yStart;
+				if (tween.coords.y == null){
+					tween.coords.y = 0;
 				}
-				if (tween.coords.zTarget){
+				if (tween.coords.z == null){
+					tween.coords.z = 0
+				}
+				if (tween.coords.x == null){
+					tween.coords.x= 0
+				}
+				
+				if (tween.coords.yTarget!==null){
+					tween.coords.y = tween.coords.yTarget - tween.coords.yStart;
+				} 
+				if (tween.coords.zTarget!==null){
 					tween.coords.z = tween.coords.zTarget - tween.coords.zStart;
 				}
-				if (tween.coords.xTarget){
+				if (tween.coords.xTarget !==null){
 					tween.coords.x = tween.coords.xTarget - tween.coords.xStart;
 				}
 				
-			}
-			
-			var tweenFunc = null;
-			switch (tween.type){
-			case "easein":
-				tweenFunc = easeInQuad
-				break;
-			case "easeout":
-				tweenFunc = easeOutQuad
-				break;
-			case "easeinout":
-				tweenFunc = easeInOutQuad
-			}
-			
-			var rY = tweenFunc(tween.coords.yit,tween.coords.yStart,tween.coords.y,100);
-			var rZ = tweenFunc(tween.coords.yit,tween.coords.zStart,tween.coords.z,100);
-			var rX = tweenFunc(tween.coords.yit,tween.coords.xStart,tween.coords.x,100);
-			
-			if (!tween.coords.ydone){
-				
-				if ((tween.coords.y >= 0 && (tween.coords.yStart + tween.coords.y) <= rY) ||
-					tween.coords.y <= 0 && (tween.coords.yStart + tween.coords.y) >= rY){
-					camera.position.y = tween.coords.yStart + tween.coords.y;
-					tween.coords.ydone = true;
-				}else{
-					camera.position.y =  rY;
+				if (!tween.coords.speed){
+					tween.coords.speed = 50
 				}
-			}
-			
-			if (!tween.coords.zdone){
 				
-				if ((tween.coords.z >= 0 && (tween.coords.zStart + tween.coords.z) <= rZ) ||
-					tween.coords.z <= 0 && (tween.coords.zStart + tween.coords.z) >= rZ){
-					camera.position.z = tween.coords.zStart + tween.coords.z;
-					tween.coords.zdone = true;
-				}else{
-					camera.position.z =  rZ;
-				}
+		//		console.log('start move',tween.coords);
 			}
-			
-			if (!tween.coords.xdone){
-				
-				if ((tween.coords.x >= 0 && (tween.coords.xStart + tween.coords.x) <= rX) ||
-					tween.coords.x <= 0 && (tween.coords.xStart + tween.coords.x) >= rX){
-					camera.position.x = tween.coords.xStart + tween.coords.x;
-					tween.coords.xdone = true;
-				}else{
-					camera.position.x =  rX;
-				}
-			}
-			
-			if (tween.coords.ydone && tween.coords.zdone && tween.coords.zdone){
+						
+			camera.position.y = tween.type(tween.coords.yit,tween.coords.yStart,tween.coords.y,tween.coords.speed);
+			camera.position.z = tween.type(tween.coords.yit,tween.coords.zStart,tween.coords.z,tween.coords.speed);
+			camera.position.x = tween.type(tween.coords.yit,tween.coords.xStart,tween.coords.x,tween.coords.speed);
+		
+			if (tween.coords.yit == tween.coords.speed){
 				
 				tweenSchedule.splice(0,1);
-				return tween.cb && tween.cb();
+				tween.cb && tween.cb();
 			}
 			
 			tween.coords.yit++;
-			return true;
+		}
+		
+		if (tweenLookAtSchedule && tweenLookAtSchedule.length){
+			
+			var tween = tweenLookAtSchedule[0];
+			
+			if (!tween.coords.yit){
+				tween.coords.yit = 0;
+				
+				if (tween.coords.yStart == null){
+					tween.coords.yStart = 0
+				}
+				if (!tween.coords.zStart == null){
+					tween.coords.zStart = 0
+				}
+				if (!tween.coords.xStart == null){
+					tween.coords.xStart = 0
+				}
+				
+				if (tween.coords.y == null){
+					tween.coords.y = 0;
+				}
+				if (tween.coords.z == null){
+					tween.coords.z = 0
+				}
+				if (tween.coords.x == null){
+					tween.coords.x= 0
+				}
+				
+				if (tween.coords.yTarget!==null){
+					tween.coords.y = tween.coords.yTarget - tween.coords.yStart;
+				} 
+				if (tween.coords.zTarget!==null){
+					tween.coords.z = tween.coords.zTarget - tween.coords.zStart;
+				}
+				if (tween.coords.xTarget !==null){
+					tween.coords.x = tween.coords.xTarget - tween.coords.xStart;
+				}	
+				
+				if (!tween.coords.speed){
+					tween.coords.speed = 50
+				}
+			///	console.log('start lookat',tween.coords);
+			}
+						
+			camera.lookAt({
+			y: tween.type(tween.coords.yit,tween.coords.yStart,tween.coords.y,tween.coords.speed),
+			z: tween.type(tween.coords.yit,tween.coords.zStart,tween.coords.z,tween.coords.speed),
+			x: tween.type(tween.coords.yit,tween.coords.xStart,tween.coords.x,tween.coords.speed)
+			});
+			
+			if (tween.coords.yit == tween.coords.speed){
+				
+				tweenLookAtSchedule.splice(0,1);
+				tween.cb && tween.cb();
+			}
+			
+			tween.coords.yit++;
+		}
+		
+
+		if (tweenLensSchedule && tweenLensSchedule.length){
+			
+			var tween = tweenLensSchedule[0];
+			
+			if (!tween.coords.yit){
+				tween.coords.yit = 0;
+				
+				if (tween.coords.start == null){
+					tween.coords.start = 0
+				}
+				if (tween.coords.target == null){
+					tween.coords.target = 0;
+				}
+				if (tween.coords.change == null){
+					tween.coords.change = tween.coords.target - tween.coords.start;
+				}		
+				if (!tween.coords.speed){
+					tween.coords.speed = 50
+				}
+			///	console.log('start lookat',tween.coords);
+			}
+						
+			camera.setLens(tween.type(tween.coords.yit,tween.coords.start,tween.coords.change,tween.coords.speed));
+	
+			if (tween.coords.yit == tween.coords.speed){
+				
+				tweenLensSchedule.splice(0,1);
+				tween.cb && tween.cb();
+			}
+			
+			tween.coords.yit++;
 		}
 	}
 	
@@ -296,7 +383,17 @@ function BrickGame() {
 		//setup camera
 		camera = new THREE.PerspectiveCamera(50, gameSize.x / gameSize.y, 1,10000);
 		camera.position.z = 1;
+		camera.position.x = 0;
 		camera.position.y = -10;
+		camera.up = {x:0,y:0,z:1}
+		camera.eulerOrder = "XZY"
+		camera.lookAt({
+			'x' : 0,
+			'y' : 4,
+			'z' : -4
+		});
+		
+		
 		
 		//create three world
 		scene = new THREE.Scene();
@@ -324,6 +421,8 @@ function BrickGame() {
 		});
 		
 		renderer.shadowMapEnabled = true;
+		renderer.gammaInput = true;
+		renderer.physicallyBasedShading = true;
 		//renderer.shadowMapType = THREE.PCFShadowMap;
 //		renderer = new THREE.CanvasRenderer({
 //			'alpha' : true,
@@ -386,9 +485,9 @@ function BrickGame() {
 		scene.add( light );
 	}
 	
-	function createBall(x,y) {
+	function createBall(x,y,color) {
 		var ball = new Ball(scene,scene.box2dworld);
-		ball.create(x,y);
+		ball.create(x,y,color);
 		balls.push(ball);
 		syncedObjects.push(ball);
 		
@@ -401,11 +500,13 @@ function BrickGame() {
 
 		//create controlable paddle
 		paddle = new Paddle(scene,scene.box2dworld);
+		window.p = paddle;
+		window.c = camera;
 		var paddleBody =paddle.create(paddlePosX,paddlePosY);
 		syncedObjects.push(paddle);
 		
 		//create ball
-		var ball = createBall(paddlePosX,-3.5);
+		var ball = createBall(paddlePosX,-3.5,12256377.722587917);
 		var ballBody = ball.body;
 		
 		var direction = paddleBody.GetPosition().Copy()
@@ -413,7 +514,7 @@ function BrickGame() {
 		direction.Normalize();
 		direction.Multiply(-1);
 		
-		//ballBody.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-0.5,-0.05),ballBody.GetWorldCenter())
+		ballBody.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-0.2,-0.05),ballBody.GetWorldCenter())
 		ballBody.ApplyImpulse(direction, ballBody.GetWorldCenter())
 		syncedObjects.push(ball);
 		
@@ -440,12 +541,14 @@ function BrickGame() {
 				}
 				var brick = new Brick(scene,scene.box2dworld);
 				
+				
 				bricks.push(brick.create(x, y, 
 							lvl.brickSize.x, 
 							lvl.brickSize.y,
-							lvl.types[lvl.layout[i][j]].color,
-							lvl.types[lvl.layout[i][j]].type));
-				count++;
+							lvl.types[lvl.layout[i][j]]
+				));
+				
+				count += lvl.types[lvl.layout[i][j]].hitCount || 1;
 				
 				}
 				x+=lvl.brickSpace.x;		
@@ -454,7 +557,7 @@ function BrickGame() {
 			y-=lvl.brickSpace.y;			
 		}
 		
-		brickCount = count;	
+		levelTargetPoints = count;	
 		
 		//create square bounderies
 		var groundBodyDef = new b2BodyDef;
@@ -511,10 +614,6 @@ function BrickGame() {
 		ground.receiveShadow = true;
 
 		scene.add( ground );	
-		
-		
-		//camera.position.z = 5;
-		//camera.position.y = -4;
 	}
 
 	/**
@@ -599,12 +698,12 @@ function BrickGame() {
 		}
 
 		// if we have ball brick colition we schedule the brick to be removed in next animate
-		if (contactBallBody && brick && !brick.destroyed) {
-			brick.destroyed = true;
+		if (contactBallBody && brick && brick.userData.hitCount) {
+
+			brick.userData.hitCount -= 1;
 			
-			
-			brickCount--
-			event.pub("game.brickDestroy",{'bricksLeft':brickCount,'brick':brick,'ball':contactBallBody});
+			levelTargetPoints--
+			event.pub("game.brickHit",{'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
 			
 			//var m = manifold.getWorldManifold();
 			//var f:V2 = V2.multiplyN(m.normal, contactBallBody.GetMass() * 170);
@@ -620,7 +719,6 @@ function BrickGame() {
 	 */
 	var preSolveContactListener = function(contact, manifold) {
 		
-		return;
 		// do some stuff
 		fa = contact.GetFixtureA();
 		fb = contact.GetFixtureB();
@@ -644,8 +742,8 @@ function BrickGame() {
 		}
 		
 		if (contactBallBody && brick){
-			//console.log(contact)
-			//contact.SetEnabled(false);
+			
+			event.pub("game.brickPreHit",{'contact':contact,'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
 		}
 	}
 	
@@ -674,56 +772,73 @@ function BrickGame() {
 		addPostRenderCb.push(cb)
 	}
 	
+	
+	/**
+	 * this method is called before every render step. scheduled prerender callbacks are executed here
+	 * note that we dont remove the cb inside the loop. this to prevent situation where a callback is 
+	 * created inside another callback. this will mess up the array size and iteration
+	 */
+	var executePreRenderIterator;
 	function executePrerenderCb(){
-		for (var i=0,len=addPreRenderCb.length;i<len;i++){
-			addPreRenderCb[i].dirty = true;
-			addPreRenderCb[i]();
+		for (executePreRenderIterator=0,len=addPreRenderCb.length;executePreRenderIterator<len;executePreRenderIterator++){
+			addPreRenderCb[executePreRenderIterator].dirty = true;
+			addPreRenderCb[executePreRenderIterator]();
 		}
-		
-		//remove executed callback.
-		//we dont remove inside loop to prevent situations that a callback created
-		//another callback and interfers with array size. TODO this could be smarter?/
-		for (var i=addPreRenderCb.length-1;i >=0;i--){
+
+		for (executePreRenderIterator=addPreRenderCb.length-1;executePreRenderIterator >=0;executePreRenderIterator--){
 			
-			if (addPreRenderCb[i].dirty){
-				addPreRenderCb.splice(i,1);
+			if (addPreRenderCb[executePreRenderIterator].dirty){
+				addPreRenderCb.splice(executePreRenderIterator,1);
 			}
 		}
 	}
 	
+	/**
+	 * this method is called after every render step. scheduled postrender callbacks are executed here
+	 * note that we dont remove the cb inside the loop. this to prevent situation where a callback is 
+	 * created inside another callback. this will mess up the array size and iteration
+	 */
+	var executePostRenderIterator;
 	function executePostrenderCb(){
-		for (var i=0,len=addPostRenderCb.length;i<len;i++){
-			addPostRenderCb[i].dirty = true;
-			addPostRenderCb[i]();
+		for (var executePostRenderIterator=0,len=addPostRenderCb.length;executePostRenderIterator<len;executePostRenderIterator++){
+			addPostRenderCb[executePostRenderIterator].dirty = true;
+			addPostRenderCb[executePostRenderIterator]();
 		}
 		
-		for (var i=addPostRenderCb.length-1;i >=0;i--){
+		for (var executePostRenderIterator=addPostRenderCb.length-1;executePostRenderIterator >=0;executePostRenderIterator--){
 			
-			if (addPostRenderCb[i].dirty){
-				addPostRenderCb.splice(i,1);
+			if (addPostRenderCb[executePostRenderIterator].dirty){
+				addPostRenderCb.splice(executePostRenderIterator,1);
 			}
 		}
+	}
+
+	/**
+	 * updates gui objects with physics objects. 
+	 * we run this method every render tick
+	 */
+	var syncWorldObjectsIterator;
+	function syncWorldObjects(){
+		for (syncWorldObjectsIterator=0; syncWorldObjectsIterator <syncedObjects.length;syncWorldObjectsIterator++){
+			syncedObjects[syncWorldObjectsIterator].sync();		
+			//generic method. used for detecting game events
+			syncedObjects[syncWorldObjectsIterator].validate();
+		}		
 	}
 
 	
 	var animating = false;
 	function animate() {
 
+		window.cam = camera;
 		animating = true;
 		executePrerenderCb();
 		
-
 		//remove bricks beeing hit
 		destroyScheduledBricks();
 			
-			
 		//update gui with physics objects
-		for (var i=0; i <syncedObjects.length;i++){
-			syncedObjects[i].sync();
-			
-			//generic method. used for detecting game events
-			syncedObjects[i].validate();
-		}
+		syncWorldObjects();
 			
 		if (!paused){
 			
@@ -736,39 +851,28 @@ function BrickGame() {
 			scene.box2dworld.Step(1 / 60, 10, 10);
 			scene.box2dworld.ClearForces();
 		}
-
-		
-		//make sure camera looks to paddle
+	
+		if (cameraLookAtMesh){
 		camera.lookAt({
-			'x' : paddle.mesh.position.x,
-			'y' : paddle.mesh.position.y+2,
-			'z' : paddle.mesh.position.z
+			'x' : cameraLookAtMesh.position.x,
+			'y' : cameraLookAtMesh.position.y+2,
+			'z' : cameraLookAtMesh.position.z
 		});
+		}
 
+		moveCameraSchedule()
+		
 		camera.rotation.z = 0;
 		
-		if (!moveCameraSchedule()){
-			//camera.position.x = paddle.mesh.position.x / 2; 
+		if (cameraXFollowsPaddle){
+			camera.position.x = paddle.mesh.position.x / 1.3;
 		}
-		
-		camera.position.x = paddle.mesh.position.x / 2; 
-		
-//		if (balls.length){
-//			camera.position.z += balls[0].body.GetPosition().y / 20
-//		}
-//		
-		var diff = 0 - paddle.mesh.position.x;
-		scene.box2dworld.SetGravity(new b2Vec2((diff / 6), -1));
-//		
-//		if (balls.length){
-//			camera.position.y += 2.5 - (balls[0].body.GetPosition().y / 20)
-//		}
-		
-		//request
-		
+			
+		scene.box2dworld.SetGravity(new b2Vec2(((0 - paddle.mesh.position.x) / 6), -1));
+
 		//render 3d scene
 		renderer.render(scene, camera);
-		
+		window.re = renderer;
 		executePostrenderCb();
 		
 		requestAnimationFrame(animate);
