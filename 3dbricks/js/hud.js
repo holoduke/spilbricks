@@ -53,8 +53,8 @@ function Hud(){
 		
  	}
 	
-	this.render = function(){
-		
+	this.clear = function(){
+		clear();
 	}
 	
 	init();

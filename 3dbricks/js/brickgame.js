@@ -57,7 +57,7 @@ function BrickGame() {
 			animate();
 		}
 		
-		event.pub("game.start");
+		ev.pub("game.start");
 	}
 		
 	/**
@@ -77,6 +77,23 @@ function BrickGame() {
 			that.start();
 			if (cb) cb();
 		});
+	}
+	
+	this.cleanup = function(cb){
+		this.addPostRenderCb(function(){
+			
+			if (balls.length >= 0){
+				for (var i=balls.length-1; i >= 0; i--){
+					that.destroyBall(balls[i]);
+				}
+			}
+			
+			cleanup();
+			
+			if (cb) cb();
+		});
+		
+		
 	}
 	
 	/**
@@ -180,6 +197,8 @@ function BrickGame() {
 	var tweenSchedule = [];
 	var tweenLookAtSchedule = [];
 	var tweenLensSchedule = [];
+	
+	window.a = [tweenSchedule,tweenLookAtSchedule,tweenLensSchedule]
 	/**
 	 * schedules camera tweens.
 	 * 
@@ -238,6 +257,16 @@ function BrickGame() {
 				}
 				if (tween.coords.xStart == null){
 					tween.coords.xStart = camera.position.x;
+				}
+				
+				if (tween.coords.yTarget == null){
+					tween.coords.yTarget = camera.position.y;
+				}
+				if (tween.coords.zTarget == null){
+					tween.coords.zTarget = camera.position.z;
+				}
+				if (tween.coords.xTarget == null){
+					tween.coords.xTarget = camera.position.x;
 				}
 				
 				if (tween.coords.y == null){
@@ -491,7 +520,7 @@ function BrickGame() {
 		balls.push(ball);
 		syncedObjects.push(ball);
 		
-		event.pub('game.ball.created',ball);
+		ev.pub('game.ball.created',ball);
 		
 		return ball;
 	}
@@ -694,7 +723,7 @@ function BrickGame() {
 				}
 			}
 			
-			event.pub("game.paddleHit",paddle);
+			ev.pub("game.paddleHit",paddle);
 		}
 
 		// if we have ball brick colition we schedule the brick to be removed in next animate
@@ -703,7 +732,7 @@ function BrickGame() {
 			brick.userData.hitCount -= 1;
 			
 			levelTargetPoints--
-			event.pub("game.brickHit",{'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
+			ev.pub("game.brickHit",{'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
 			
 			//var m = manifold.getWorldManifold();
 			//var f:V2 = V2.multiplyN(m.normal, contactBallBody.GetMass() * 170);
@@ -743,7 +772,7 @@ function BrickGame() {
 		
 		if (contactBallBody && brick){
 			
-			event.pub("game.brickPreHit",{'contact':contact,'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
+			ev.pub("game.brickPreHit",{'contact':contact,'bricksLeft':levelTargetPoints,'brick':brick,'ball':contactBallBody});
 		}
 	}
 	
@@ -829,8 +858,7 @@ function BrickGame() {
 	
 	var animating = false;
 	function animate() {
-
-		window.cam = camera;
+		
 		animating = true;
 		executePrerenderCb();
 		
@@ -863,7 +891,7 @@ function BrickGame() {
 		moveCameraSchedule()
 		
 		camera.rotation.z = 0;
-		
+
 		if (cameraXFollowsPaddle){
 			camera.position.x = paddle.mesh.position.x / 1.3;
 		}
@@ -872,7 +900,7 @@ function BrickGame() {
 
 		//render 3d scene
 		renderer.render(scene, camera);
-		window.re = renderer;
+
 		executePostrenderCb();
 		
 		requestAnimationFrame(animate);

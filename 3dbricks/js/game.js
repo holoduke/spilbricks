@@ -1,37 +1,257 @@
 var game = (function(){
 	
-	var maxLifes = 3;
+	var maxLifes = 0;
 	var level = 1;
 	var lifes = maxLifes;
 	var score = 0;
 	var bonusMultiplier = 1;
 	var game = new BrickGame()
-	var hud;
+	var hud = new Hud();
 	var demo = false;
+	
+	/**
+	 * game state machine
+	 * use this to change game states. logic here makes sure old gamestates are getting cleaned up.
+	 */
+	var states = {"demo":1,"playing":2,"gameover":3};
+	var gameState = {
+		
+		currentState : null,	
+			
+		startDemo : function(){
+			startDemoGame();
+			gameState.currentState = states.demo;
+		},
+		
+		stopDemo : function(){
+			
+		},
+		
+		startGameover : function(){
+			gameState.clearPreviousState(function(){
+				gameState.startDemo();
+				gameState.currentState = states.gameover;
+			})			
+		},
+		
+		startGame : function(){
+			
+			gameState.clearPreviousState(function(){
+				startPlayerGame();
+				gameState.currentState = states.playing;
+			})
+		},
+		
+		stopGame : function(){
+			
+		},
+		
+		clearPreviousState : function(cb){
+			
+			console.log('clear prev',gameState.currentState)
+			if (gameState.currentState == states.demo){
+				stopDemoGame(cb)
+			}
+			else if (gameState.currentState == states.playing){
+				stopPlayerGame(cb)
+			}	
+			else if (gameState.currentState == states.gameover){
+				stopDemoGame(cb)
+			}
+			else{
+				cb();
+			}
+		}		
+	}
+	
+	
+	/*
+	 * ##################################
+	 * BASIC ROUTINES TO START/STOP VARIOUS GAME STATES
+	 * ##################################
+	 */
+	function startPlayerGame(){
+				
+		level = 1;
+		lifes = maxLifes;
+		score = 0;
+		registerPlayerGameEvents();
+		game.setLevel(level);
+	
+		fade(0,1,function(){
+			game.start();
+			game.reset(function(){
+				game.setCameraLookAtMesh(game.getPaddle().mesh);
+				game.cameraFollowsPaddle(true);
+				
+				game.togglePause(function(){
+		
+					//let the camera start from this position
+					game.getCamera().setLens(25)
+					game.getCamera().position.x = 0;
+					game.getCamera().position.y = -7;
+					game.getCamera().position.z = 2;			
+					
+					animateBricksFadeIn(function(){
+		
+						hud.drawGameStatistics(score,level,lifes);
+						game.togglePause();			
+					});
+				
+					fade(1,-1,function(){});
+					game.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:6, xTarget:0});
+										
+				});
+			});
+		});
+	};
+	
+	function stopPlayerGame(cb){
+		game.resetTweenCamera(); 
+		unRegisterGameEvents();
+		game.cleanup(cb);	
+		hud.clear();
+	}
+	
+	function startDemoGame(){
+		
+		document.getElementById("splashContainer").style.display = 'block';
+		document.getElementById("startTitle").style.opacity = 0;
+		
+		demo = true;
+		level = 1;
+		lifes = maxLifes;
+		score = 0;
+		registerDemoGameEvents();
+		game.setLevel(level);
+		
+		game.start();
+		//game.getCamera().setLens(12)
+		game.setCameraLookAtMesh({'position':{'x':0,'y':-2,'z':0}});
+
+		game.tweenCameraLens(Tween.easeInOutQuad,{
+			start: 10,
+			target: 25,
+			speed: 200
+		});
+		
+		game.tweenCamera(Tween.easeOutQuad, {
+			yStart : -7,
+			yTarget : -6,
+			zStart : 4,
+			zTarget : 2,
+			xTarget : 4,
+			speed : 200
+		}, function() {
+				
+			game.tweenCameraLens(Tween.easeInOutQuad,{
+				start: 25,
+				target: 19,
+				speed: 300
+			})
+	
+			function aniloop(){
+				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:5,speed:1500});
+				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-6,speed:1500});
+				game.tweenCamera(Tween.easeInOutQuad,{yTarget:-5,zTarget:3, xTarget:-5,speed:1500});
+				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-5,speed:1500,},function(){
+					
+					aniloop();
+				});
+			}
+		
+		aniloop();
+		});
+		
+		fade(1,-1,function(){})
+		game.cameraFollowsPaddle(false);
+		game.reset(function(){
+			game.togglePause(function(){
+				animateBricksFadeIn(function(){
+					game.togglePause();
+					activatePaddleAi();	
+					
+					//let the start title blink
+					var el = document.getElementById("startTitle");
+					
+					var start = 1;
+					var change = -1
+					var dur = 20;
+					var t = 0;
+					
+					//start animation of press key to continue title
+					function blinkAnimate(){
+						
+						if (!demo) return;
+						
+						el.style.opacity = Tween.easeInOutQuad(t,start,change,dur);
+						t++;
+						
+						t = t % (dur*2);
+						
+						setTimeout(function(){
+							blinkAnimate();
+						},20)
+					}
+					
+					blinkAnimate();
+					
+					var listener = function(e){
+						if (e.keyCode == 13){
+							//startPlayerGame();
+							gameState.startGame();						
+							document.removeEventListener('keyup', listener, false);
+						}
+					}
+					
+					document.addEventListener('keyup', listener);	
+					
+				});
+			});		
+		});
+	};
+	
+	function stopDemoGame(cb){
+		
+		if (!demo) return cb();
+		
+		document.getElementById("splashContainer").style.display = 'none';
+		demo = false;
+		paddleAiActive = false;
+		demo = false;
+		game.resetTweenCamera(); 
+		unRegisterGameEvents();
+		game.getPaddle().body.SetPosition(new Box2D.Common.Math.b2Vec2(0,-4))
+		game.cleanup(cb);
+		
+	}
+	
 	
 	/*
 	 * ##################################
 	 * GAME EVENTS
 	 * ##################################
 	 */
-	
+	//these events are registered when player starts a game
 	function registerPlayerGameEvents(){
-			
-		event.sub("game.start",function(){
+		
+		ev.sub("game.start",function(){
 			
 			hud.drawGameStatistics(score,level,lifes);
 		});
 		
-		event.sub("game.ball.created",function(ball){
+		ev.sub("game.ball.created",function(ball){
 		
 			if (game.getBallCount() == 2){
 				gamee.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:8});
 			}
 		});
 
-		event.sub("game.ball.dies",function(ball){
+		ev.sub("game.ball.dies",function(ball){
 			
 			if (game.getBallCount() == 1 && !lifes){
+				
+				return gameState.startGameover();
 				
 				level = 1;
 				score = 0;
@@ -40,7 +260,8 @@ var game = (function(){
 				game.setLevel(level);
 				
 				game.reset(function(){
-								
+					game.setCameraLookAtMesh(game.getPaddle().mesh);
+					game.cameraFollowsPaddle(true);			
 					animateBricksFadeIn(function(){
 						game.togglePause();
 					});
@@ -74,7 +295,7 @@ var game = (function(){
 		});
 		
 		//when ball hit brick
-		event.sub("game.brickHit",function(e){
+		ev.sub("game.brickHit",function(e){
 			
 			var bscore = 100 * bonusMultiplier;
 			score += bscore;
@@ -171,7 +392,7 @@ var game = (function(){
 		});
 			
 		//event is fired just before a brick ball collition is occuring
-		event.sub("game.brickPreHit",function(e){
+		ev.sub("game.brickPreHit",function(e){
 	
 			//create ghost ball for 3 seconds
 			if (e.brick.userData.type.type == 'ghost'){
@@ -196,15 +417,19 @@ var game = (function(){
 		});
 		
 		//when ball hits paddle we reset the bonus multiplyer
-		event.sub("game.paddleHit",function(){
+		ev.sub("game.paddleHit",function(){
 			
 			bonusMultiplier = 1;
 		});	
 	}
 	
+	
+	//these events are registered when demo splash screen is shown.
+	//its a bit identical to the events when player plays the game with the exception that
+	//there are no camera changes here. code is a bit duplicated
 	function registerDemoGameEvents(){
 		
-		event.sub("game.ball.dies",function(ball){
+		ev.sub("game.ball.dies",function(ball){
 			
 			if (game.getBallCount() == 1 && !lifes){
 				
@@ -235,7 +460,7 @@ var game = (function(){
 		});
 		
 		//when ball hit brick
-		event.sub("game.brickHit",function(e){
+		ev.sub("game.brickHit",function(e){
 			
 			var bscore = 100 * bonusMultiplier;
 			score += bscore;
@@ -316,7 +541,7 @@ var game = (function(){
 		});
 			
 		//event is fired just before a brick ball collition is occuring
-		event.sub("game.brickPreHit",function(e){
+		ev.sub("game.brickPreHit",function(e){
 	
 			//create ghost ball for 3 seconds
 			if (e.brick.userData.type.type == 'ghost'){
@@ -341,25 +566,19 @@ var game = (function(){
 		});
 		
 		//when ball hits paddle we reset the bonus multiplyer
-		event.sub("game.paddleHit",function(){
+		ev.sub("game.paddleHit",function(){
 			
 			bonusMultiplier = 1;
 		});	
 	}
 	
 	function unRegisterGameEvents(){
-		event.unsub("game.paddleHit");
-		event.unsub("game.brickPreHit");
-		event.unsub("game.brickHit");
-		event.unsub("game.ball.dies");
-		event.unsub("game.ball.created");
-		event.unsub("game.start");
-	}
-	
-	
-	function deactivePaddleAi(){
-		paddleAiActive = false;
-		demo = false;
+		ev.unsub("game.paddleHit");
+		ev.unsub("game.brickPreHit");
+		ev.unsub("game.brickHit");
+		ev.unsub("game.ball.dies");
+		ev.unsub("game.ball.created");
+		ev.unsub("game.start");
 	}
 	
 	function initGame(){
@@ -367,115 +586,45 @@ var game = (function(){
 		game.init();	
 	}
 	
-	function startDemo(){
-		demo = true;
-		level = 1;
-		lifes = maxLifes;
-		score = 0;
-		unRegisterGameEvents();
-		registerDemoGameEvents();
-		game.setLevel(level);
-		game.start();
-		//game.getCamera().setLens(12)
-		game.setCameraLookAtMesh({'position':{'x':0,'y':-2,'z':0}});
+	
+	var fade = function(start,change,cb){
+		
+		var el = document.getElementById("white");
+		
+		var dur = 20;
+		var t = 0;
+		
+		//start animation of press key to continue title
+		function animate(){
+			
+			if (t == dur){
+				if(cb) cb();
+				return;
+			};
+			
+			el.style.opacity = Tween.easeInOutQuad(t,start,change,dur);
+			t++;
+			
+			t = t % (dur*2);
+			
+			setTimeout(function(){
+				animate();
+			},20)
+		}
+		
+		animate();	
+	}
+	
 
-		game.tweenCameraLens(Tween.easeInOutQuad,{
-			start: 10,
-			target: 25,
-			speed: 200
-		});
-		
-		game.tweenCamera(Tween.easeOutQuad, {
-			yStart : -7,
-			yTarget : -6,
-			zStart : 4,
-			zTarget : 2,
-			xTarget : 4,
-			speed : 1200
-		}, function() {
-					
-			game.tweenCameraLens(Tween.easeInOutQuad,{
-				start: 25,
-				target: 19,
-				speed: 300
-			})
-		
-		
-			function aniloop(){
-						
-				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:5,speed:1500});
-				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-6,speed:1500});
-				game.tweenCamera(Tween.easeInOutQuad,{yTarget:-5,zTarget:3, xTarget:-5,speed:1500});
-			//	game.tweenCamera(Tween.easeInOutQuad,{yTarget:4,zTarget:3, xTarget:-4,speed:400});
-	//			game.tweenCamera(Tween.easeInOutQuad,{yTarget:6,zTarget:2, xTarget:-10,speed:100});
-	//			game.tweenCamera(Tween.easeInOutQuad,{yTarget:-3,zTarget:6, xTarget:10,speed:100});
-				game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-5,speed:1500,},function(){
-					
-					aniloop();
-				});
-			}
-		
-		aniloop();
-		});
-		
-		
-		game.reset(function(){
-			game.togglePause(function(){
-							
-				animateBricksFadeIn(function(){
-					game.togglePause();
-					game.cameraFollowsPaddle(false);
-					activatePaddleAi();
-						
-					
-					
-					
-					
-					
-				});
-			});		
-		});
-	}
 	
-	function startPlayerGame(){
-		
-		deactivePaddleAi();
-		game.resetTweenCamera(); //from demo
-		level = 1;
-		lifes = maxLifes;
-		score = 0;
-		game.getCamera().setLens(25)
-		hud = new Hud();
-		unRegisterGameEvents();
-		registerPlayerGameEvents();
-		
-		game.setLevel(level);
-		game.reset(function(){
-			game.togglePause(function(){
-				game.setCameraLookAtMesh(game.getPaddle().mesh);		
-				game.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:6, xStart: 10, xTarget:0});
-					
-				animateBricksFadeIn(function(){
-					hud.drawGameStatistics(score,level,lifes);
-					game.togglePause();
-					game.cameraFollowsPaddle(true);
-				//	game.setCameraLookAtMesh(game.getPaddle().mesh);		
-					
-	
-					
-				});
-			});		
-		});		
-	}
-	
-	window.st = startPlayerGame;
-	window.de = startDemo;
-	
+
 	
 	//create the hud to show level info, life info and scores
 	initGame();
-	startDemo();
+	gameState.startDemo();
+	//startPlayerGame();
 	
+
 	//start the game and immidiately pause the game.
 	//we then move the camera towards the back of the table and unpause the game
 
@@ -486,15 +635,10 @@ var game = (function(){
 	
 	
 	
+
+
 	
 	
-	
-	
-	/*
-	 * ##################################
-	 * GAME HELPERS FUNCTIONS
-	 * ##################################
-	 */
 	
 	/**
 	 * shows score above brick. bricks slowly fades away and will be removed from scene
@@ -612,7 +756,7 @@ var game = (function(){
 		
 		var bricks = game.getBricks();
 		var startHeight = 4;
-		var step = 0.2;
+		var step = 0.3;
 		var diffStep = 1;
 
 		for (var i=0,len=bricks.length;i<len;i++){
@@ -734,13 +878,27 @@ var game = (function(){
 		
 		function ai(){
 			
+			if (!paddleAiActive) return;
+			
 			var keepMoving = false;
 			var left = 0;
 			var right = 0;
 			
 			if (game.getBalls().length)
 			{
-				var ball = game.getBalls()[0];
+				var balls = game.getBalls();
+				
+				var ball;
+				for (var i=0; i<balls.length; i++){
+					
+					if (!ball){
+						ball = balls[i];
+					}
+					
+					if (ball.body.GetPosition().y > balls[i].body.GetPosition().y){
+						ball = balls[i];
+					}
+				}
 				
 				var diff = ball.body.GetPosition().x - game.getPaddle().body.GetPosition().x
 				
@@ -772,11 +930,10 @@ var game = (function(){
 		
 		ai();
 	}
+
 	
 	
-	
-	
-	
+	 
 	
 	
 	

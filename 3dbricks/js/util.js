@@ -1,53 +1,54 @@
-    //basic event system
-    event = {};
-    event.subs = [];
-    event.subsIndex = [];
-    event.published = {};
+    //basic ev system
+    ev = {};
+    ev = {};
+    ev.subs = [];
+    ev.subsIndex = [];
+    ev.published = {};
 
-    event.sub = function(to,cb){
+    ev.sub = function(to,cb){
 
-        var ci = event.subsIndex.indexOf(to);
+        var ci = ev.subsIndex.indexOf(to);
 
         if (ci == -1){
-            event.subsIndex.push(to);
-            event.subs.push([]);
-            ci = event.subsIndex.length-1;
+            ev.subsIndex.push(to);
+            ev.subs.push([]);
+            ci = ev.subsIndex.length-1;
         }
 
-        event.subs[ci].push({'to':to,'cb':cb});
+        ev.subs[ci].push({'to':to,'cb':cb});
     }
  
-    event.pub = function(to,param){
+    ev.pub = function(to,param){
     	var pubIterator;
-    	var triggerIndex = event.subsIndex.indexOf(to);
+    	var triggerIndex = ev.subsIndex.indexOf(to);
 
-        event.published[to] = param || true;
+        ev.published[to] = param || true;
         
         if (triggerIndex == -1) return null;
 
-        for (pubIterator=0, len = event.subs[triggerIndex].length; pubIterator < len; pubIterator++)
+        for (pubIterator=0, len = ev.subs[triggerIndex].length; pubIterator < len; pubIterator++)
         {
-            event.subs[triggerIndex][pubIterator].cb(param);
+            ev.subs[triggerIndex][pubIterator].cb(param);
         }
     }
     
-    event.unsub = function(to){
-    	var ci = event.subsIndex.indexOf(to);
-    	var triggerIndex = event.subsIndex.indexOf(to);
+    ev.unsub = function(to){
+    	var ci = ev.subsIndex.indexOf(to);
+    	var triggerIndex = ev.subsIndex.indexOf(to);
     	
     	if (ci != -1){
-    		event.subs[ci] = [];
-    		event.subsIndex[to] = [];
+    		ev.subs[ci] = [];
+    		ev.subsIndex[to] = [];
     	}
     }
     
-    event.executeAfter = function(to,cb){
+    ev.executeAfter = function(to,cb){
     	
-    	if (event.published[to]){
-    		cb(event.published[to]);
+    	if (ev.published[to]){
+    		cb(ev.published[to]);
     	}
     	else{
-    		event.sub(to,cb);	
+    		ev.sub(to,cb);	
     	}
     }  
     
