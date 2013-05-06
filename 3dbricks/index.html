@@ -30,10 +30,16 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4472aa', end
 	
 		<div style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;">
 			<div style="background:url(images/title.png); width:830px;height:90px;margin:0 auto; margin-top:50px;"></div>
-			<div id="startTitle" style="opacity:0;background:url(images/continue.png); width:510px;height:56px;margin:0 auto; margin-top:50px;"></div>
 		</div>
-		
 	</div>
+	<div style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;">
+		<div id="startTitle" style="opacity:0;background:url(images/continue.png); width:510px;height:56px;margin:0 auto; margin-top:180px;"></div>
+	</div>
+	
+	<div style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;">
+		<div id="gameoverTitle" style="display:none;background:url(images/gameover.png); width:270px;height:56px;margin:0 auto; margin-top:50px;"></div>
+	</div>	
+	
 	<div id="white" style="background-color:white;opacity:0;position:absolute;top:0;border-radius:10px;width:1000px;height:600px;"></div>
 	
 	</div>
@@ -49,6 +55,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4472aa', end
 		<script src="lib/helvetiker_bold.typeface.js"></script>
 		<script src="lib/helvetiker_regular.typeface.js"></script>
 		
+				<script src="lib/ConvolutionShader.js"></script>
+		<script src="lib/CopyShader.js"></script>
+		<script src="lib/FilmShader.js"></script>
+		<script src="lib/FXAAShader.js"></script>
+		<script src="lib/FocusShader.js"></script>
+	<script src="lib/EffectComposer.js"></script>
+		<script src="lib/MaskPass.js"></script>
+		<script src="lib/RenderPass.js"></script>
+		<script src="lib/BloomPass.js"></script>
+		<script src="lib/ShaderPass.js"></script>
+		<script src="lib/FilmPass.js"></script>		
 
 	
 <script type="text/javascript" src="js/util.js"></script>

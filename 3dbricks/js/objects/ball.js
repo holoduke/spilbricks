@@ -6,7 +6,7 @@ function Ball(scene,world){
 
 	var getGeometry = function(color){
 		
-		var geometry = new THREE.SphereGeometry(0.2, 16, 8);
+		var geometry = new THREE.SphereGeometry(0.2, 32, 8);
 		geometry.dynamic = true;
 		var color = color || Math.random() * 0xffffff;
 		

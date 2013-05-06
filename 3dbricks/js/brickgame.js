@@ -6,7 +6,7 @@ function BrickGame() {
 	};
 	
 	var level;
-	var camera, scene, renderer;
+	var camera, scene, renderer, composer;
 	var geometry, material, mesh;
 	var syncedObjects = [];
 	var paused = false;
@@ -444,33 +444,74 @@ function BrickGame() {
 		
 		world.SetContactListener(contactListener);
 
-		renderer = new THREE.WebGLRenderer({
-			'alpha' : true,
-			antialias : true
-		});
+
+		
+		
+		
+		renderer = new THREE.WebGLRenderer( );
+		renderer.autoClear = false;
+		renderer.sortObjects = false;
 		
 		renderer.shadowMapEnabled = true;
-		renderer.gammaInput = true;
+		//renderer.gammaInput = true;
 		renderer.physicallyBasedShading = true;
-		//renderer.shadowMapType = THREE.PCFShadowMap;
-//		renderer = new THREE.CanvasRenderer({
-//			'alpha' : true,
-//			antialias : true
-//		});
-
-//		renderer.shadowMapEnabled = true;
-//		renderer.shadowMapSoft = true;
-//		renderer.anti
-//		renderer.shadowCameraNear = 3;
-//		renderer.shadowCameraFar = camera.far;
-//		renderer.shadowCameraFov = 50;
-//		renderer.setClearColorHex(0xff0000, 0);
-//		renderer.shadowMapBias = 0.0039;
+		//renderer.autoClear = false;
 		renderer.shadowMapDarkness = 0.5;
 		renderer.shadowMapWidth = 1024;
 		renderer.shadowMapHeight = 1024;
+		renderer.setClearColor( 0xFFFFFF, 0.0 );
 		renderer.setSize(gameSize.x, gameSize.y);
+		//renderer.setClearColorHex ( 0xFFFFFF, 0.0 );
+		document.getElementById('3dcanvas').appendChild(renderer.domElement);
+		
+		// postprocessing
 
+		var renderModel = new THREE.RenderPass( scene, camera );
+		renderModel.clearColor= 10980498.161917519 //c = Math.random() * 0xffffff;
+		//console.log(c)
+		renderModel.clearAlpha = 1;
+		//renderModel.clear = false;
+		
+		//renderModel.renderToScreen = true
+	
+		var effectFilm = new THREE.FilmPass( 0.01, 0.1, 448, false );
+		effectFilm.renderToScreen = true;
+		
+		effectFocus = new THREE.ShaderPass( THREE.FocusShader );
+
+		effectFocus.uniforms[ "screenWidth" ].value = gameSize.x;
+		effectFocus.uniforms[ "screenHeight" ].value = gameSize.y;
+
+		//effectFocus.renderToScreen = true;
+
+		
+
+		effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
+		effectFXAA.uniforms[ "resolution" ].value =new THREE.Vector2( 1 / 1000, 1 / 600) 
+	effectFXAA.renderToScreen = true;
+		///effectFXAA.uniforms[ "resolution" ].type = "v5";
+		
+		var effectBloom = new THREE.BloomPass( 0.5 );
+		//effectBloom.renderToScreen = true;
+		
+		
+		
+		composer = new THREE.EffectComposer( renderer );
+		window.co = composer
+		
+		composer.setSize(1000, 600);
+		composer.addPass( renderModel );
+		composer.addPass( effectBloom );
+		composer.addPass( effectFXAA );
+		//
+		//composer.addPass( renderModel );
+
+		//composer.addPass( effectFilm );
+		//composer.addPass( effectFocus );
+
+		
+		
+		
 		document.getElementById('3dcanvas').appendChild(renderer.domElement);
 	}
 
@@ -899,8 +940,11 @@ function BrickGame() {
 		scene.box2dworld.SetGravity(new b2Vec2(((0 - paddle.mesh.position.x) / 6), -1));
 
 		//render 3d scene
-		renderer.render(scene, camera);
+		//renderer.render(scene, camera);
 
+		renderer.clear();
+		composer.render( 0.01 );
+		
 		executePostrenderCb();
 		
 		requestAnimationFrame(animate);

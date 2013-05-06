@@ -1,6 +1,6 @@
 var game = (function(){
 	
-	var maxLifes = 0;
+	var maxLifes = 3;
 	var level = 1;
 	var lifes = maxLifes;
 	var score = 0;
@@ -19,8 +19,12 @@ var game = (function(){
 		currentState : null,	
 			
 		startDemo : function(){
-			startDemoGame();
 			gameState.currentState = states.demo;
+			
+			showMainTitleScreen()
+			startDemoGame(function(){
+				showPressKeyToPlay();
+			});
 		},
 		
 		stopDemo : function(){
@@ -29,16 +33,17 @@ var game = (function(){
 		
 		startGameover : function(){
 			gameState.clearPreviousState(function(){
-				gameState.startDemo();
-				gameState.currentState = states.gameover;
+				gameState.currentState = states.gameover;				
+				game.togglePause();
+				startGameOverScreen();
 			})			
 		},
 		
 		startGame : function(){
 			
 			gameState.clearPreviousState(function(){
-				startPlayerGame();
 				gameState.currentState = states.playing;
+				startPlayerGame();
 			})
 		},
 		
@@ -53,10 +58,12 @@ var game = (function(){
 				stopDemoGame(cb)
 			}
 			else if (gameState.currentState == states.playing){
-				stopPlayerGame(cb)
+				//stopPlayerGame(cb)
+				cb()
 			}	
 			else if (gameState.currentState == states.gameover){
-				stopDemoGame(cb)
+				stopGameOverScreen(cb)
+				game.togglePause();
 			}
 			else{
 				cb();
@@ -71,7 +78,10 @@ var game = (function(){
 	 * ##################################
 	 */
 	function startPlayerGame(){
-				
+			
+		document.getElementById("gameoverTitle").style.display = 'none';
+		document.getElementById("startTitle").style.opacity = 0;
+		
 		level = 1;
 		lifes = maxLifes;
 		score = 0;
@@ -113,11 +123,104 @@ var game = (function(){
 		hud.clear();
 	}
 	
-	function startDemoGame(){
-		
+	function showMainTitleScreen(){
 		document.getElementById("splashContainer").style.display = 'block';
 		document.getElementById("startTitle").style.opacity = 0;
+	}
+	
+	function startGameOverScreen(){
 		
+		
+		fade(0,1,function(){
+			
+			document.getElementById("gameoverTitle").style.display = "block";
+			hud.clear();
+			game.setCameraLookAtMesh({'position':{'x':0,'y':-2,'z':0}});
+			game.cameraFollowsPaddle(false);
+			game.tweenCamera(Tween.easeOutQuad, {
+				yTarget : -6,
+				zTarget : 2,
+				xTarget : -4,
+				speed : 200
+			}, function() {
+			
+				game.tweenCameraLens(Tween.easeInOutQuad,{
+					start: 25,
+					target: 19,
+					speed: 300
+				})
+		
+				function aniloop(){
+
+					game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-5,speed:1500});
+					game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:6,speed:1500});
+					game.tweenCamera(Tween.easeInOutQuad,{yTarget:-5,zTarget:3, xTarget:-5,speed:1500});
+					game.tweenCamera(Tween.easeInOutQuad,{yTarget:5,zTarget:3, xTarget:-5,speed:1500,},function(){
+						
+						aniloop();
+					});
+				}
+			
+			aniloop();
+			});
+			
+			fade(1,-1,function(){
+				showPressKeyToPlay();
+			});
+		});
+	}
+	
+	function stopGameOverScreen(cb){
+		
+		document.getElementById("gameoverTitle").style.display = 'none';
+		document.getElementById("startTitle").style.opacity = 0;
+		paddleAiActive = false;
+		game.resetTweenCamera(); 
+		unRegisterGameEvents();
+		game.cleanup(cb);	
+	}
+	
+	function showPressKeyToPlay(){
+		//let the start title blink
+		var el = document.getElementById("startTitle");
+		
+		var start = 1;
+		var change = -1
+		var dur = 20;
+		var t = 0;
+		
+		//start animation of press key to continue title
+		function blinkAnimate(){
+			if (gameState.currentState != states.gameover 
+				&& gameState.currentState != states.demo){
+				return;
+			}
+			
+			el.style.opacity = Tween.easeInOutQuad(t,start,change,dur);
+			t++;
+			
+			t = t % (dur*2);
+			
+			setTimeout(function(){
+				blinkAnimate();
+			},20)
+		}
+		
+		blinkAnimate();
+		
+		var listener = function(e){
+			if (e.keyCode == 13){
+				//startPlayerGame();
+				gameState.startGame();						
+				document.removeEventListener('keyup', listener, false);
+			}
+		}
+		
+		document.addEventListener('keyup', listener);	
+	}
+	
+	function startDemoGame(cb){
+			
 		demo = true;
 		level = 1;
 		lifes = maxLifes;
@@ -171,41 +274,7 @@ var game = (function(){
 					game.togglePause();
 					activatePaddleAi();	
 					
-					//let the start title blink
-					var el = document.getElementById("startTitle");
-					
-					var start = 1;
-					var change = -1
-					var dur = 20;
-					var t = 0;
-					
-					//start animation of press key to continue title
-					function blinkAnimate(){
-						
-						if (!demo) return;
-						
-						el.style.opacity = Tween.easeInOutQuad(t,start,change,dur);
-						t++;
-						
-						t = t % (dur*2);
-						
-						setTimeout(function(){
-							blinkAnimate();
-						},20)
-					}
-					
-					blinkAnimate();
-					
-					var listener = function(e){
-						if (e.keyCode == 13){
-							//startPlayerGame();
-							gameState.startGame();						
-							document.removeEventListener('keyup', listener, false);
-						}
-					}
-					
-					document.addEventListener('keyup', listener);	
-					
+					if (cb) cb()
 				});
 			});		
 		});
@@ -373,12 +442,20 @@ var game = (function(){
 						
 						game.togglePause(function(){				
 							game.reset(function(){
-						
+								//alert(game.getPaddle().body.GetPosition().x)
 								game.setCameraLookAtMesh(game.getPaddle().mesh);
 								game.cameraFollowsPaddle(true);
+								//game.getPaddle().body.SetPosition(new Box2D.Common.Math.b2Vec2(0,-4))
 								
-								game.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:6});
+								game.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:6},function(){
+//									game.setCameraLookAtMesh(game.getPaddle().mesh);
+//									game.cameraFollowsPaddle(true);
+//									//alert('we')
+								});
+								
 								//game.togglePause(function(){
+					
+								//window.pop = true;
 									animateBricksFadeIn(function(){						
 										hud.drawGameStatistics(score,level,lifes);
 										game.togglePause();
@@ -820,7 +897,7 @@ var game = (function(){
 			yTarget : brickY - 1,
 			zStart : cameraZ,
 			zTarget : 2,
-			xStart : paddleX / 2,
+			xStart : paddleX / 1.3,
 			xTarget : brickX,
 			speed : 20
 		});
@@ -851,7 +928,7 @@ var game = (function(){
 					zStart : 2,
 					zTarget : cameraZ,
 					xStart : brickX,
-					xTarget : paddleX / 2,
+					xTarget : paddleX / 1.3,
 					speed : 20
 				});
 				game.tweenLookAtCamera(Tween.easeInOutQuad, {
