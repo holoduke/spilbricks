@@ -467,7 +467,7 @@ function BrickGame() {
 		// postprocessing
 
 		var renderModel = new THREE.RenderPass( scene, camera );
-		renderModel.clearColor= 10980498.161917519 //c = Math.random() * 0xffffff;
+		renderModel.clearColor= 0x222222 //c = Math.random() * 0xffffff;
 		//console.log(c)
 		renderModel.clearAlpha = 1;
 		//renderModel.clear = false;
