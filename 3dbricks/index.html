@@ -10,20 +10,22 @@
 
 <div style="border-radius:10px;width:1020px;height:625px;margin: 0 auto;border:1px solid #888888;position:relative;">
 
-	<div style="height:600px; width:1000px;margin-top:10px;margin-left:10px;position:relative;background: #4472aa; /* Old browsers */
-background: -moz-linear-gradient(top,  #4472aa 0%, #d6d6d6 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4472aa), color-stop(100%,#d6d6d6)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top,  #4472aa 0%,#d6d6d6 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top,  #4472aa 0%,#d6d6d6 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top,  #4472aa 0%,#d6d6d6 100%); /* IE10+ */
-background: linear-gradient(to bottom,  #4472aa 0%,#d6d6d6 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4472aa', endColorstr='#d6d6d6',GradientType=0 ); /* IE6-9 */
-
-	">
+	<div style="margin:10px;position:relative;">
 		
 		<div id="3dcanvas" style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;"></div>
 		<div id="3dcanvas2" style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;"></div>
 	<div id="2dcanvas" style="position:absolute;top:0;opacity:0.8;border-radius:10px;width:1000px;height:600px;"></div>
+	
+	<div id="loadingContainer" style="background-color:#444444;position:absolute;top:0;border-radius:10px;width:1000px;height:600px;">
+		<div id="loadingText" style="width:150px;color: white;
+font-size: 24px;
+margin: 0 auto;
+margin-top: 250px;
+background-color: rgb(36, 36, 36);
+padding: 12px;
+border-radius: 18px;
+border: 3px solid #555555;">Loading 0%</div>
+	</div>	
 	
 	<div id="splashContainer" style="display:none;position:absolute;top:0;border-radius:10px;width:1000px;height:600px;">
 		<div style="position:absolute;top:0;border-radius:10px;width:1000px;height:600px;background-color:#ffffff;opacity:0.0"></div>
@@ -70,8 +72,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4472aa', end
 
 	
 <script type="text/javascript" src="js/util.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/resource.js"></script>
 <script type="text/javascript" src="js/tween.js"></script>
-<script type="text/javascript" src="lib/Box2dWeb-2.1.a.3.js"></script>
+<script type="text/javascript" src="lib/Box2dWeb-2.1.a.3.min.js"></script>
 <script type="text/javascript" src="js/objects/gameobject.js"></script>
 <script type="text/javascript" src="js/objects/ball.js"></script>
 <script type="text/javascript" src="js/objects/brick.js"></script>

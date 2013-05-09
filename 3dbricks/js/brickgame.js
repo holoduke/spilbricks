@@ -430,7 +430,7 @@ function BrickGame() {
 		
 		//create three world
 		scene = new THREE.Scene();
-		scene.fog = new THREE.Fog( 0x59472b, 0.1, 20 );
+	//	scene.fog = new THREE.Fog( 0x59472b, 0.1, 20 );
 
 		//create box2d physics world
 		var world = new b2World(new b2Vec2(0, -2) // gravity
@@ -454,7 +454,7 @@ function BrickGame() {
 		
 		renderer = new THREE.WebGLRenderer();
 		renderer.autoClear = false;
-		renderer.sortObjects = false;
+		renderer.sortObjects = true;
 		
 		renderer.shadowMapEnabled = true;
 		//renderer.gammaInput = true;
@@ -471,7 +471,7 @@ function BrickGame() {
 		// postprocessing
 
 		var renderModel = new THREE.RenderPass( scene, camera );
-		renderModel.clearColor= 0x222222 //c = Math.random() * 0xffffff;
+		renderModel.clearColor= 0x111111 //c = Math.random() * 0xffffff;
 		//console.log(c)
 		renderModel.clearAlpha = 0;
 		//renderModel.clear = false;
@@ -549,9 +549,12 @@ function BrickGame() {
 //
 		pointLight = new THREE.PointLight(0xffaa00);
 		scene.add(pointLight);
+		pointLight.intensity = 0.5
 		pointLight.position.x = 1;
-		pointLight.position.y = -3;
-		pointLight.position.z = 3;
+		pointLight.position.y = -8;
+		pointLight.position.z = 13;
+		pointLight.intensity = 1; 
+		pointLight.position.x = -400
 //scene.add(pointLight);
 		
 //		lightMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
@@ -565,7 +568,7 @@ function BrickGame() {
 		var light = new THREE.SpotLight( 0xffffff, 1, 0, Math.PI, 1 );
 		light.position.set( 0, 2, 5 );
 		light.target.position.set( 0, 0, 0 );
-
+		window.lo = pointLight;
 		light.castShadow = true;
 
 		light.shadowCameraNear = 1;
@@ -588,8 +591,95 @@ function BrickGame() {
 		return ball;
 	}
 	
+	var texture = "textures/b.png";
+	var textureCube = THREE.ImageUtils.loadTextureCube( [texture,texture,texture,texture,texture,texture]);
+	
 	function setupObjects() {
 
+		var shader = THREE.ShaderLib[ "cube" ];
+		shader.uniforms[ "tCube" ].value = textureCube;
+
+		var material = new THREE.ShaderMaterial( {
+
+			fragmentShader: shader.fragmentShader,
+			vertexShader: shader.vertexShader,
+			uniforms: shader.uniforms,
+			depthWrite: false,
+			side: THREE.BackSide
+
+		} ),
+
+		mesh = new THREE.Mesh( new THREE.CubeGeometry( 600, 600, 600 ), material );
+		mesh.flipSided = false;
+		scene.add( mesh );
+		
+		
+		
+
+		var material = new THREE.MeshBasicMaterial( { map: texture } );
+		
+		
+		var geometry = new THREE.SphereGeometry(40, 32, 8);
+		geometry.dynamic = true;
+		var color = color || Math.random() * 0xffffff;
+		console.log('c',color);
+		material = new THREE.MeshPhongMaterial({
+			color : 4329811.019266887 ,
+			shininess : 10,
+		});
+
+		var planet = new THREE.Mesh(geometry, material);
+		planet.useQuaternion = true;
+	//	planet.receiveShadow = true;
+		planet.castShadow = true;
+		planet.position.y = 120;
+		planet.rotation.x = 120;
+	
+		scene.add(planet);
+	
+		
+		var geometry = new THREE.SphereGeometry(10, 32, 8);
+		geometry.dynamic = true;
+		var color = Math.random() * 0xffffff;
+		console.log('cp',color);
+		material = new THREE.MeshPhongMaterial({
+			color : 3757508.62369127,
+			shininess : 10
+		});
+
+		var planet = new THREE.Mesh(geometry, material);
+		planet.useQuaternion = true;
+		planet.receiveShadow = true;
+		planet.castShadow = true;
+		planet.position.y = 90;
+		planet.position.x = -90
+	
+		scene.add(planet);
+		
+		
+		var geometry = new THREE.SphereGeometry(2, 32, 8);
+		geometry.dynamic = true;
+		var color = Math.random() * 0xffffff;
+		console.log('cp',color);
+		material = new THREE.MeshPhongMaterial({
+			color : 7700762.083967534,
+			shininess : 10
+		});
+
+		var planet = new THREE.Mesh(geometry, material);
+		planet.useQuaternion = true;
+		planet.receiveShadow = true;
+		planet.castShadow = true;
+		planet.position.y = 80;
+		planet.position.x = -100
+	
+		scene.add(planet);
+		
+		
+		
+		
+		
+		
 		//create controlable paddle
 		paddle = new Paddle(scene,scene.box2dworld);
 		window.p = paddle;
@@ -695,7 +785,7 @@ function BrickGame() {
 		scene.box2dworld.CreateJoint(prismaticJointDef);
 			
 		var geometry = new THREE.PlaneGeometry( 10, 10 );
-		var planeMaterial = new THREE.MeshPhongMaterial( { color: 132332,opacity: 0.5,transparent: false } );
+		var planeMaterial = new THREE.MeshPhongMaterial( { color: 132332,opacity: 0.8,transparent: true } );
 		//laneMaterial.ambient = planeMaterial.color; 
 
 		var ground = new THREE.Mesh( geometry, planeMaterial );
@@ -706,6 +796,8 @@ function BrickGame() {
 		ground.receiveShadow = true;
 
 		scene.add( ground );	
+		
+		ev.pub("game.levelObjectsCreated");
 	}
 
 	/**
@@ -783,6 +875,10 @@ function BrickGame() {
 					else if (lv.y <= 0){
 						ball.SetLinearVelocity(new b2Vec2(lv.x,-newY))
 					}
+				}
+				
+				if (Math.abs(newY) < 3){
+					//ball.SetLinearVelocity(new b2Vec2(lv.x,4))
 				}
 			}
 			
@@ -974,11 +1070,11 @@ function BrickGame() {
 		//render 3d scene
 		//renderer.render(scene, camera);
 
-		renderer.clear();
+		renderer.clear(false,true,false);
 		
 		
 		t3 = new Date();
-		composer.render( 1 );
+		composer.render( 0.1 );
 		t4 = new Date()-t3;
 		t4total += t4;
 		

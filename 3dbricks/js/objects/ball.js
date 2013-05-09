@@ -16,7 +16,7 @@ function Ball(scene,world){
 		});
 
 		var ball = new THREE.Mesh(geometry, material);
-		ball.useQuaternion = true;
+		//ball.useQuaternion = true;
 	//	ball.receiveShadow = true;
 		ball.castShadow = true;
 		

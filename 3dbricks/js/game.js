@@ -1,13 +1,19 @@
+
+var resource = new Resources();
+
 var game = (function(){
 	
-	var maxLifes = 3;
-	var level = 1;
+	var maxLifes = 1;
+	var level = 3;
 	var lifes = maxLifes;
 	var score = 0;
 	var bonusMultiplier = 1;
 	var game = new BrickGame()
 	var hud = new Hud();
 	var demo = false;
+	var sound = new Sound();
+	var firstStart= true;
+		
 	
 	/**
 	 * game state machine
@@ -20,6 +26,8 @@ var game = (function(){
 			
 		startDemo : function(){
 			gameState.currentState = states.demo;
+			
+			sound.playTheme();	
 			
 			showMainTitleScreen()
 			startDemoGame(function(){
@@ -63,6 +71,7 @@ var game = (function(){
 				cb()
 			}	
 			else if (gameState.currentState == states.gameover){
+				console.log('s')
 				stopGameOverScreen(cb)
 				game.togglePause();
 			}
@@ -90,7 +99,7 @@ var game = (function(){
 		game.setLevel(level);
 	
 		fade(0,1,function(){
-			game.start();
+			//game.start();
 			game.reset(function(){
 				game.setCameraLookAtMesh(game.getPaddle().mesh);
 				game.cameraFollowsPaddle(true);
@@ -257,7 +266,7 @@ var game = (function(){
 			
 		game.addPreRenderCb(function(){
 			//t: current time, b: begInnIng value, c: change In value, d: duration
-			game.getComposer().passes[2].copyUniforms.opacity.value = Tween.easeInOutQuad(i,5,-3.5,bloomdur);
+			game.getComposer().passes[2].copyUniforms.opacity.value = Tween.easeInOutQuad(i,1.4,-0.4,bloomdur);
 			
 			i++;
 			
@@ -310,6 +319,7 @@ var game = (function(){
 		
 		fade(1,-1,function(){})
 		game.cameraFollowsPaddle(false);
+		
 		game.reset(function(){
 			game.togglePause(function(){
 				animateBricksFadeIn(function(){
@@ -349,6 +359,11 @@ var game = (function(){
 		ev.sub("game.start",function(){
 			
 			hud.drawGameStatistics(score,level,lifes);
+		});
+		
+		ev.sub("game.levelObjectsCreated",function(){
+
+			sound.playLevelMusic(level);
 		});
 		
 		ev.sub("game.ball.created",function(ball){
@@ -412,6 +427,8 @@ var game = (function(){
 			score += bscore;
 			hud.drawGameStatistics(score,level,lifes);
 			bonusMultiplier+=1;
+			
+			sound.playBrickHit();
 			
 			if (e.brick.userData.type.type == 'extraBalls'){
 				game.addPreRenderCb(function(){
@@ -698,6 +715,7 @@ var game = (function(){
 		ev.unsub("game.ball.dies");
 		ev.unsub("game.ball.created");
 		ev.unsub("game.start");
+		ev.unsub("game.levelObjectsCreated");
 	}
 	
 	function initGame(){
@@ -739,8 +757,12 @@ var game = (function(){
 
 	
 	//create the hud to show level info, life info and scores
-	initGame();
-	gameState.startDemo();
+	resource.loadResources(function(){
+		
+		initGame();
+		gameState.startDemo();
+		
+	})
 	//startPlayerGame();
 	
 

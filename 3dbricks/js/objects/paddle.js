@@ -37,21 +37,25 @@ function Paddle(scene,world){
 		bodyPoly = new b2PolygonShape();   
 		fixDef.shape = bodyPoly;
 
+
+		//var Array = new Array(20, -25, -20, -25, -50, -15, -70, 5, -70, 25, 70, 25, 70, 5, 50, -15);
+
+		
 		var vertexArray = [];
-		vertexArray.push(new b2Vec2(-0.7, -0.1));
+
+		vertexArray.push(new b2Vec2(-0.0, -0.3));
 		vertexArray.push(new b2Vec2(0.7, -0.1));
 
-		vertexArray.push(new b2Vec2(0.7, 0));
-		vertexArray.push(new b2Vec2(0.634, 0.028));
-		vertexArray.push(new b2Vec2(0.552, 0.054));
-		vertexArray.push(new b2Vec2(0.416, 0.088));
-		vertexArray.push(new b2Vec2(0.062, 0.1));
+		vertexArray.push(new b2Vec2(0.6, 0.2));
+		vertexArray.push(new b2Vec2(0.2, 0.3));
 
-		vertexArray.push(new b2Vec2(-0.062, 0.1));
-		vertexArray.push(new b2Vec2(-0.416, 0.088));
-		vertexArray.push(new b2Vec2(-0.552, 0.054));
-		vertexArray.push(new b2Vec2(-0.634, 0.028));
-		vertexArray.push(new b2Vec2(-0.7, 0));
+		vertexArray.push(new b2Vec2(-0.2, 0.3));
+		vertexArray.push(new b2Vec2(-0.6, 0.2));
+		
+		vertexArray.push(new b2Vec2(-0.7, -0.1));
+	
+		
+		
 
 		bodyPoly.SetAsArray(vertexArray, vertexArray.length);
 
@@ -107,13 +111,13 @@ function Paddle(scene,world){
 		
 		dir = getDir();
 		if (dir > 0) {
-			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(2.2,0),this.body.GetWorldCenter())
+			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(4.2,0),this.body.GetWorldCenter())
 			
 			speed += dir/100;
 			if (speed < 0) speed += dir/60;
 		}
 		else if (dir < 0){
-			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-2.2,0),this.body.GetWorldCenter())
+			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-4.2,0),this.body.GetWorldCenter())
 			speed += dir/100;
 			if (speed > 0) speed +=dir/60;
 		}
@@ -122,15 +126,25 @@ function Paddle(scene,world){
 	
 	this.create = function(x, y){
 		
-		var paddle = getGeometry(x, y);
-		scene.add(paddle);
+		//var paddle = getGeometry(x, y);
 		
-		this.mesh = paddle;
+	    mesh = new THREE.Mesh( resource.getResource('models/object.js'), new THREE.MeshPhongMaterial(
+	    		{color:2232323}) );
+        mesh.scale.set( 1, 1, 1 );
+        mesh.rotation.x = 1.4
+        mesh.position.x = x;
+        mesh.position.y = y;
+        scene.add( mesh );
+        this.mesh = mesh;
+	   
+	//	scene.add(paddle);
+		
+		//this.mesh = paddle;
 		
 		this.body = getBody(x, y);
 		this.body.userData = {
 			'name' : 'paddle',
-			'guiref' : paddle  
+			'guiref' : this.mesh   
 		};
 			
 		addListeners();
