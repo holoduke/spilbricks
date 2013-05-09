@@ -193,6 +193,10 @@ function BrickGame() {
 		level = lvl;
 	}
 	
+	this.getComposer = function(){
+		return composer;
+	}
+	
 
 	var tweenSchedule = [];
 	var tweenLookAtSchedule = [];
@@ -410,7 +414,7 @@ function BrickGame() {
 	var setupWorld = function() {
 
 		//setup camera
-		camera = new THREE.PerspectiveCamera(50, gameSize.x / gameSize.y, 1,10000);
+		camera = new THREE.PerspectiveCamera(50, gameSize.x / gameSize.y, 1,1000);
 		camera.position.z = 1;
 		camera.position.x = 0;
 		camera.position.y = -10;
@@ -448,7 +452,7 @@ function BrickGame() {
 		
 		
 		
-		renderer = new THREE.WebGLRenderer( );
+		renderer = new THREE.WebGLRenderer();
 		renderer.autoClear = false;
 		renderer.sortObjects = false;
 		
@@ -469,7 +473,7 @@ function BrickGame() {
 		var renderModel = new THREE.RenderPass( scene, camera );
 		renderModel.clearColor= 0x222222 //c = Math.random() * 0xffffff;
 		//console.log(c)
-		renderModel.clearAlpha = 1;
+		renderModel.clearAlpha = 0;
 		//renderModel.clear = false;
 		
 		//renderModel.renderToScreen = true
@@ -488,32 +492,50 @@ function BrickGame() {
 
 		effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
 		effectFXAA.uniforms[ "resolution" ].value =new THREE.Vector2( 1 / 1000, 1 / 600) 
-	effectFXAA.renderToScreen = true;
+	//effectFXAA.renderToScreen = true;
 		///effectFXAA.uniforms[ "resolution" ].type = "v5";
 		
-		var effectBloom = new THREE.BloomPass( 0.5 );
+		var effectBloom = new THREE.BloomPass(1.5 );
 		//effectBloom.renderToScreen = true;
+		
+		
+	
+		depthTarget = new THREE.WebGLRenderTarget( 1000, 600, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat } );
+		var effect = new THREE.ShaderPass( THREE.SSAOShader );
+		effect.uniforms[ 'tDepth' ].value = depthTarget;
+		effect.uniforms[ 'size' ].value.set( 1000, 600 );
+		effect.uniforms[ 'cameraNear' ].value = camera.near;
+		effect.uniforms[ 'cameraFar' ].value = camera.far;
+		//effect.renderToScreen = true;
+		
+		var copyPass = new THREE.ShaderPass( THREE.CopyShader );
+		copyPass.renderToScreen = true;
 		
 		
 		
 		composer = new THREE.EffectComposer( renderer );
+		composer.setSize(1000,600);
 		window.co = composer
 		
-		composer.setSize(1000, 600);
+		//composer.setSize(1000, 600);
 		composer.addPass( renderModel );
-		composer.addPass( effectBloom );
 		composer.addPass( effectFXAA );
+		composer.addPass( effectBloom );
 		//
+		//composer.addPass(effect);
+		//composer.addPass( effectBloom );
 		//composer.addPass( renderModel );
-
+		composer.addPass( copyPass );
 		//composer.addPass( effectFilm );
 		//composer.addPass( effectFocus );
 
-		
+		bloomPass = effectBloom;
 		
 		
 		document.getElementById('3dcanvas').appendChild(renderer.domElement);
 	}
+	
+	var bloomPass;
 
 	function setupLighting(){
 		//setup lighting
@@ -896,10 +918,16 @@ function BrickGame() {
 		}		
 	}
 
+	var t;
+	var t2;
 	
+	var t3;
+	var t4;
+	var t4total =0;
+	var y =0;
 	var animating = false;
 	function animate() {
-		
+		y++;
 		animating = true;
 		executePrerenderCb();
 		
@@ -916,9 +944,13 @@ function BrickGame() {
 			paddlePosX = paddle.body.GetPosition().x
 			paddlePosY = paddle.body.GetPosition().y
 			
+			
 			//step physics
+			t = new Date();
 			scene.box2dworld.Step(1 / 60, 10, 10);
 			scene.box2dworld.ClearForces();
+			t2 = new Date()-t;
+				
 		}
 	
 		if (cameraLookAtMesh){
@@ -943,7 +975,14 @@ function BrickGame() {
 		//renderer.render(scene, camera);
 
 		renderer.clear();
-		composer.render( 0.01 );
+		
+		
+		t3 = new Date();
+		composer.render( 1 );
+		t4 = new Date()-t3;
+		t4total += t4;
+		
+		//console.log('phys',t2,'render',t4,"render avg",Math.round((t4total/y)*100)/100)
 		
 		executePostrenderCb();
 		

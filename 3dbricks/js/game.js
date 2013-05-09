@@ -23,6 +23,7 @@ var game = (function(){
 			
 			showMainTitleScreen()
 			startDemoGame(function(){
+				//game.getComposer().passes[3].
 				showPressKeyToPlay();
 			});
 		},
@@ -109,6 +110,7 @@ var game = (function(){
 					});
 				
 					fade(1,-1,function(){});
+					game.getComposer().passes[2].copyUniforms.opacity.value = 0.7;
 					game.tweenCamera(Tween.easeInOutQuad,{yTarget:-7,zTarget:6, xTarget:0});
 										
 				});
@@ -129,9 +131,29 @@ var game = (function(){
 	}
 	
 	function startGameOverScreen(){
+			
+
 		
 		
 		fade(0,1,function(){
+
+			var bloomdur = 100;
+			var i = 0;
+			function animateBloom(){
+			
+			if (i==bloomdur) return;
+				
+			game.addPreRenderCb(function(){
+				//t: current time, b: begInnIng value, c: change In value, d: duration
+				game.getComposer().passes[2].copyUniforms.opacity.value = Tween.easeInOutQuad(i,2,-0.5,bloomdur);
+				
+				i++;
+				
+				animateBloom();
+			})
+			}
+			animateBloom();
+			
 			
 			document.getElementById("gameoverTitle").style.display = "block";
 			hud.clear();
@@ -165,7 +187,7 @@ var game = (function(){
 			});
 			
 			fade(1,-1,function(){
-				showPressKeyToPlay();
+				showPressKeyToPlay();				
 			});
 		});
 	}
@@ -226,6 +248,26 @@ var game = (function(){
 		lifes = maxLifes;
 		score = 0;
 		registerDemoGameEvents();
+		
+		var bloomdur = 100;
+		var i = 0;
+		function animateBloom(){
+		
+		if (i==bloomdur) return;
+			
+		game.addPreRenderCb(function(){
+			//t: current time, b: begInnIng value, c: change In value, d: duration
+			game.getComposer().passes[2].copyUniforms.opacity.value = Tween.easeInOutQuad(i,5,-3.5,bloomdur);
+			
+			i++;
+			
+			animateBloom();
+		})
+		}
+		animateBloom();
+		
+		
+		
 		game.setLevel(level);
 		
 		game.start();
