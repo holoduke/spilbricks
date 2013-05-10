@@ -111,13 +111,13 @@ function Paddle(scene,world){
 		
 		dir = getDir();
 		if (dir > 0) {
-			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(4.2,0),this.body.GetWorldCenter())
+			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(6.2,0),this.body.GetWorldCenter())
 			
 			speed += dir/100;
 			if (speed < 0) speed += dir/60;
 		}
-		else if (dir < 0){
-			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-4.2,0),this.body.GetWorldCenter())
+		else if (dir < 0){ 
+			this.body.ApplyImpulse(new Box2D.Common.Math.b2Vec2(-6.2,0),this.body.GetWorldCenter())
 			speed += dir/100;
 			if (speed > 0) speed +=dir/60;
 		}
